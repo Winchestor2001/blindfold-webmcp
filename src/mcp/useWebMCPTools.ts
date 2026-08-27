@@ -34,6 +34,13 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
   // name -> controller, so tools can be unregistered individually.
   const activeRef = useRef(new Map<string, AbortController>());
 
+  // registerTool is asynchronous, so two runs of the effect can otherwise
+  // overlap and reconcile the same map at the same time. React's StrictMode
+  // makes that happen on every mount in development, and the symptom is a tool
+  // silently missing from the surface. Runs are chained instead: each waits for
+  // the previous one to finish before touching anything.
+  const queueRef = useRef<Promise<void>>(Promise.resolve());
+
   const [status, setStatus] = useState<WebMCPStatus>({
     supported: false,
     registered: noTools,
@@ -51,25 +58,32 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
     }
 
     const active = activeRef.current;
-    const desired = new Set(shape ? shape.split(" ") : []);
+    const wanted = shape ? shape.split(" ") : [];
     let cancelled = false;
 
-    // Remove tools that no longer belong to the current context.
-    for (const [name, controller] of active) {
-      if (!desired.has(name)) {
-        controller.abort();
-        active.delete(name);
+    async function reconcile() {
+      if (cancelled) return;
+
+      // Remove tools that no longer belong to the current context.
+      const keep = new Set(wanted);
+      for (const [name, controller] of active) {
+        if (!keep.has(name)) {
+          controller.abort();
+          active.delete(name);
+        }
       }
-    }
 
-    // Add tools that appeared.
-    const additions = toolsRef.current.filter((tool) => !active.has(tool.name));
+      for (const name of wanted) {
+        // Re-checked every iteration: an earlier await may have changed both.
+        if (cancelled) return;
+        if (active.has(name)) continue;
 
-    async function register() {
-      for (const definition of additions) {
+        const definition = toolsRef.current.find((tool) => tool.name === name);
+        if (!definition) continue;
+
         const controller = new AbortController();
-        // Claim the slot before awaiting so a concurrent run cannot double-register.
-        active.set(definition.name, controller);
+        // Claim the slot before awaiting so nothing else registers this name.
+        active.set(name, controller);
 
         const wrapper: WebMCPTool = {
           name: definition.name,
@@ -78,13 +92,11 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
           inputSchema: definition.inputSchema,
           annotations: definition.annotations,
           execute: (input, options) => {
-            const current = toolsRef.current.find(
-              (tool) => tool.name === definition.name
-            );
+            const current = toolsRef.current.find((tool) => tool.name === name);
             if (!current) {
               // Removed between the agent's discovery and this call.
               throw new Error(
-                `The tool "${definition.name}" is not available in the current state of the page. Call get_workflow_state to see which tools apply right now.`
+                `The tool "${name}" is not available in the current state of the page. Call get_workflow_state to see which tools apply right now.`
               );
             }
             return current.execute(input, options);
@@ -92,45 +104,43 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
         };
 
         try {
-          await modelContext!.registerTool(wrapper, {
-            signal: controller.signal
-          });
+          await modelContext!.registerTool(wrapper, { signal: controller.signal });
         } catch (caught) {
-          active.delete(definition.name);
-          if (cancelled || controller.signal.aborted) return;
+          active.delete(name);
+          if (controller.signal.aborted) continue;
           setStatus((previous) => ({
             ...previous,
             supported: true,
             error:
               caught instanceof Error
                 ? caught
-                : new Error(`Failed to register "${definition.name}".`)
+                : new Error(`Failed to register "${name}".`)
           }));
           continue;
         }
       }
 
       if (cancelled) return;
-      setStatus({
-        supported: true,
-        registered: [...active.keys()],
-        error: null
-      });
+      setStatus({ supported: true, registered: [...active.keys()], error: null });
     }
 
-    void register();
+    queueRef.current = queueRef.current.then(reconcile, reconcile);
 
     return () => {
       cancelled = true;
     };
   }, [shape]);
 
-  // Unregister everything when the app unmounts.
+  // Unregister everything when the app goes away. Queued behind any reconcile
+  // still in flight, so it cannot abort a controller that is mid-registration.
   useEffect(() => {
     const active = activeRef.current;
+    const queue = queueRef;
     return () => {
-      for (const controller of active.values()) controller.abort();
-      active.clear();
+      queue.current = queue.current.then(() => {
+        for (const controller of active.values()) controller.abort();
+        active.clear();
+      });
     };
   }, []);
 
