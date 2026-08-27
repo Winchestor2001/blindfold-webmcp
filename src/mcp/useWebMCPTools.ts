@@ -96,23 +96,40 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
           description: definition.description,
           inputSchema: definition.inputSchema,
           annotations: definition.annotations,
-          execute: (input, options) => {
+          execute: async (input, options) => {
             const current = toolsRef.current.find((tool) => tool.name === name);
             if (!current) {
               // Removed between the agent's discovery and this call.
-              throw new Error(
-                `The tool "${name}" is not available in the current state of the page. Call get_workflow_state to see which tools apply right now.`
-              );
+              return {
+                error: `The tool "${name}" is not available in the current state of the page.`,
+                guidance:
+                  "Call get_workflow_state to see which tools apply right now."
+              };
             }
-            // The IDL declares both arguments, but a caller that passes no
-            // AbortSignal of its own — executeTool without options, and the
-            // DevTools WebMCP panel — reaches the callback with options
-            // undefined. The three tools that wait on a human would throw
-            // while destructuring. Standing in a signal that never aborts is
-            // honest: there is nothing for the caller to cancel with.
-            return current.execute(input ?? {}, {
-              signal: options?.signal ?? neverAborts()
-            });
+            try {
+              // The IDL declares both arguments, but a caller that passes no
+              // AbortSignal of its own — executeTool without options, and the
+              // DevTools WebMCP panel — reaches the callback with options
+              // undefined. The three tools that wait on a human would throw
+              // while destructuring. Standing in a signal that never aborts is
+              // honest: there is nothing for the caller to cancel with.
+              return await current.execute(input ?? {}, {
+                signal: options?.signal ?? neverAborts()
+              });
+            } catch (caught) {
+              // A rejected execute reaches the caller as Chrome's own wording —
+              // "Tool was executed but the invocation failed" — and whatever the
+              // tool wanted to say is gone. Every message this app raises is
+              // written for a model to act on, so they are returned as values
+              // instead. The docs put it plainly: return descriptive errors so
+              // the model can self-correct and retry.
+              return {
+                error:
+                  caught instanceof Error
+                    ? caught.message
+                    : `${name} could not complete this call.`
+              };
+            }
           }
         };
 
