@@ -12,7 +12,8 @@
     "deploy": "vite build && wrangler deploy",
     "typecheck": "tsc --noEmit",
     "audit:tools": "vite-node scripts/audit.ts",
-    "audit:export": "vite-node scripts/verify-export.ts"
+    "audit:export": "vite-node scripts/verify-export.ts",
+    "audit:surface": "vite-node scripts/audit-surface.ts"
   },
   "dependencies": {
     "idb-keyval": "^6.2.2",

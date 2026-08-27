@@ -99,6 +99,12 @@ export type State = {
    * even the words around a redaction.
    */
   strictPreviews: boolean;
+  /**
+   * Set by preview_redaction_plan. The viewer dims everything that is staying
+   * and lights up what would be removed, so the reviewer is approving something
+   * they have actually looked at rather than a number in a dialog.
+   */
+  previewing: boolean;
 };
 
 function emptyState(): State {
@@ -114,7 +120,8 @@ function emptyState(): State {
     disclosures: [],
     confirms: [],
     selection: null,
-    strictPreviews: false
+    strictPreviews: false,
+    previewing: false
   };
 }
 
@@ -345,6 +352,10 @@ export function addManualFinding(
 
 export function setSelection(selection: TextSelection | null): void {
   update((current) => ({ ...current, selection }));
+}
+
+export function setPreviewing(on: boolean): void {
+  update((current) => ({ ...current, previewing: on }));
 }
 
 export function setStrictPreviews(on: boolean): void {
