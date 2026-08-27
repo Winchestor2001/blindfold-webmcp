@@ -10,10 +10,14 @@
 //      surface is contextual, tested rather than asserted;
 //   2. every tool result fits Chrome's 1.5K output budget, measured on real
 //      data rather than estimated;
-//   3. the gates hold — apply and export do not proceed without an answer.
+//   3. the gates hold — apply and export do not proceed without an answer;
+//   4. no preview leaks a value, whole or in part, that the human has not
+//      released — the privacy invariant of CLAUDE.md Rule 6, checked against
+//      every finding on every page rather than spot-checked.
 
 import { buildTools } from "../src/mcp/registry";
 import { OUTPUT_BUDGET, measure } from "../src/mcp/fit";
+import { previewFor } from "../src/core/mask";
 import {
   answerConfirmation,
   answerDisclosure,
@@ -123,6 +127,50 @@ expectSurface(
 );
 await call("list_findings", { limit: 40 });
 await call("list_findings", { types: ["PERSON"], status: "unreviewed" });
+
+console.log("\nprivacy invariant");
+{
+  // Every finding gets a preview, and every preview is searched for every
+  // value in the document. A window of context cuts through neighbouring
+  // values as often as not, so the interesting failures are partial: the tail
+  // of an account number, the first half of a name. Fragments of six
+  // characters and up are treated as a leak.
+  const state = getState();
+  const pages = new Map(state.doc!.pages.map((page) => [page.number, page.text]));
+  const fragments: Array<{ text: string; from: string }> = [];
+  for (const finding of state.findings) {
+    const value = finding.value.trim();
+    if (value.length < 6) continue;
+    fragments.push({ text: value, from: `${finding.id} whole` });
+    fragments.push({ text: value.slice(0, 6), from: `${finding.id} head` });
+    fragments.push({ text: value.slice(-6), from: `${finding.id} tail` });
+  }
+
+  let leaks = 0;
+  let previews = 0;
+  for (const strict of [false, true]) {
+    for (const finding of state.findings) {
+      const onPage = state.findings.filter((other) => other.page === finding.page);
+      const preview = previewFor(pages.get(finding.page)!, finding, onPage, strict);
+      previews += 1;
+      for (const fragment of fragments) {
+        if (!preview.includes(fragment.text)) continue;
+        leaks += 1;
+        failed = true;
+        if (leaks <= 5) {
+          console.log(`  LEAK in preview of ${finding.id}: ${fragment.from} — ${preview}`);
+        }
+      }
+    }
+  }
+  if (leaks === 0) {
+    console.log(
+      `  ${previews} previews checked against ${fragments.length} fragments: nothing leaked`
+    );
+  } else {
+    console.log(`  ${leaks} leaks across ${previews} previews`);
+  }
+}
 
 console.log("\ndisclosure gate");
 const first = getState().findings.find((finding) => finding.type === "ORG");

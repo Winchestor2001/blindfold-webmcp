@@ -40,6 +40,12 @@ export function maskValue(value: string): string {
  * Blocks out every span in `spans` that falls inside `text`, where offsets are
  * relative to the start of `text`. Spans are applied right to left so earlier
  * offsets stay valid.
+ *
+ * A span that runs past either edge of `text` is clamped, not skipped. A
+ * context window cuts through values as often as not, and dropping a span
+ * because it is only partly visible leaves the visible part — the tail of an
+ * account number, the first half of a name — sitting in the preview in clear
+ * text. The mask is sized from the part that is actually there.
  */
 export function maskSpans(
   text: string,
@@ -48,9 +54,11 @@ export function maskSpans(
   const ordered = [...spans].sort((a, b) => b.start - a.start);
   let result = text;
   for (const span of ordered) {
-    if (span.start < 0 || span.end > text.length || span.start >= span.end) continue;
+    const start = Math.max(0, span.start);
+    const end = Math.min(text.length, span.end);
+    if (start >= end) continue;
     result =
-      result.slice(0, span.start) + maskValue(span.value) + result.slice(span.end);
+      result.slice(0, start) + maskValue(text.slice(start, end)) + result.slice(end);
   }
   return result;
 }
