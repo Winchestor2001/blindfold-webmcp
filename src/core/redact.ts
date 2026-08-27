@@ -17,7 +17,7 @@
 // rectangle lands exactly where the removed characters were, with no font
 // metrics to get wrong.
 
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import type { PDFDocument, PDFFont, RGB } from "pdf-lib";
 
 import type { AuditEntry, Finding, LoadedDocument } from "./types";
 
@@ -129,6 +129,11 @@ export type BuildInput = {
  * inspect it, and hand the very same bytes to the user.
  */
 export async function buildRedactedPdf(input: BuildInput): Promise<Uint8Array> {
+  // Loaded on demand. pdf-lib is by far the largest thing this application
+  // depends on and it is not needed until someone exports, so it should not be
+  // in the way of the page appearing.
+  const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Courier);
   const bold = await pdf.embedFont(StandardFonts.CourierBold);
@@ -172,7 +177,7 @@ export async function buildRedactedPdf(input: BuildInput): Promise<Uint8Array> {
     }
   }
 
-  addAuditPage(pdf, font, bold, input);
+  addAuditPage(pdf, font, bold, input, rgb);
   // Object streams would compress the page content, which would make the
   // residual-text check unable to read what it is checking. See findResidual.
   return pdf.save({ useObjectStreams: false });
@@ -180,9 +185,10 @@ export async function buildRedactedPdf(input: BuildInput): Promise<Uint8Array> {
 
 function addAuditPage(
   pdf: PDFDocument,
-  font: Awaited<ReturnType<PDFDocument["embedFont"]>>,
-  bold: Awaited<ReturnType<PDFDocument["embedFont"]>>,
-  input: BuildInput
+  font: PDFFont,
+  bold: PDFFont,
+  input: BuildInput,
+  rgb: (red: number, green: number, blue: number) => RGB
 ): void {
   const page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   let y = PAGE_HEIGHT - MARGIN;
