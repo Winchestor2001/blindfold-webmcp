@@ -10,7 +10,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audit:tools": "vite-node scripts/audit.ts",
+    "audit:export": "vite-node scripts/verify-export.ts"
   },
   "dependencies": {
     "idb-keyval": "^6.2.2",
@@ -30,6 +32,7 @@
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
     "vite": "^8.1.0",
+    "vite-node": "^6.0.0",
     "wrangler": "^4.127.0"
   },
   "engines": {
