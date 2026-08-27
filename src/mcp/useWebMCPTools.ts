@@ -26,6 +26,11 @@ export type WebMCPStatus = {
 
 const noTools: string[] = [];
 
+/** A signal that stays unaborted, for callers that supplied none. */
+function neverAborts(): AbortSignal {
+  return new AbortController().signal;
+}
+
 export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
   // Latest definitions, read at call time so execute never closes over stale state.
   const toolsRef = useRef(tools);
@@ -99,7 +104,15 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
                 `The tool "${name}" is not available in the current state of the page. Call get_workflow_state to see which tools apply right now.`
               );
             }
-            return current.execute(input, options);
+            // The IDL declares both arguments, but a caller that passes no
+            // AbortSignal of its own — executeTool without options, and the
+            // DevTools WebMCP panel — reaches the callback with options
+            // undefined. The three tools that wait on a human would throw
+            // while destructuring. Standing in a signal that never aborts is
+            // honest: there is nothing for the caller to cancel with.
+            return current.execute(input ?? {}, {
+              signal: options?.signal ?? neverAborts()
+            });
           }
         };
 
