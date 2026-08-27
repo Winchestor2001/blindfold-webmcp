@@ -343,8 +343,7 @@ export function addManualFinding(
   };
   update((current) => ({
     ...current,
-    findings: [...current.findings, finding],
-    selection: null
+    findings: [...current.findings, finding]
   }));
   record(actor, "redact_selection", `${type} on page ${selection.page}`);
   return finding;

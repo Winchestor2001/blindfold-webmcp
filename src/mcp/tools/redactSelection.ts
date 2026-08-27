@@ -32,6 +32,18 @@ export function redactSelection(): WebMCPTool {
       }
 
       const finding = addManualFinding(selection, type as EntityType, "agent");
+
+      // Dropping the highlight is what takes this tool off the surface, and
+      // Chrome cancels a call whose tool is unregistered while it is still
+      // running — the agent gets "failed for an unknown transient reason" for
+      // work that in fact succeeded. So the highlight is released on a later
+      // task, after this result has gone back, and the app's own
+      // selectionchange listener clears the state the same way it does when a
+      // person clicks elsewhere on the page.
+      if (typeof window !== "undefined") {
+        setTimeout(() => window.getSelection()?.removeAllRanges(), 0);
+      }
+
       return {
         finding: finding.id,
         type: finding.type,
