@@ -31,6 +31,70 @@ function neverAborts(): AbortSignal {
   return new AbortController().signal;
 }
 
+/** Edit distance, used only to name the parameter a caller probably meant. */
+function distance(a: string, b: string): number {
+  const row = Array.from({ length: b.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= a.length; i += 1) {
+    let diagonal = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const carried = row[j];
+      row[j] = Math.min(
+        row[j] + 1,
+        row[j - 1] + 1,
+        diagonal + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+      diagonal = carried;
+    }
+  }
+  return row[b.length];
+}
+
+/**
+ * Complains about parameters the tool does not accept.
+ *
+ * Chrome does not validate a call against inputSchema, so `additionalProperties:
+ * false` is a hint to the model and nothing more until the code enforces it. An
+ * undeclared key is otherwise dropped in silence and the agent reads an
+ * unfiltered answer as a filtered one: list_findings({page: 2}) replies with
+ * page 1 and no sign that anything was ignored. Wrong data that looks right is
+ * the worst failure available to this app, so the call is refused and the
+ * message names what the tool does accept, and which of those the caller most
+ * likely meant.
+ */
+function parameterComplaint(
+  name: string,
+  schema: unknown,
+  input: Record<string, unknown>
+): string | null {
+  if (!schema || typeof schema !== "object") return null;
+  const shape = schema as { additionalProperties?: unknown; properties?: unknown };
+  if (shape.additionalProperties !== false) return null;
+  if (!shape.properties || typeof shape.properties !== "object") return null;
+
+  const accepted = Object.keys(shape.properties as object);
+  const unknown = Object.keys(input).filter((key) => !accepted.includes(key));
+  if (unknown.length === 0) return null;
+
+  const listed = unknown.map((key) => `"${key}"`).join(", ");
+  const takes =
+    accepted.length === 0
+      ? `${name} takes no parameters.`
+      : `${name} accepts ${accepted.join(", ")}.`;
+
+  const suggestions = unknown
+    .map((key) => {
+      const near = accepted
+        .map((candidate) => ({ candidate, gap: distance(key, candidate) }))
+        .sort((a, b) => a.gap - b.gap)[0];
+      return near && near.gap <= 3 ? `"${key}" may be "${near.candidate}"` : null;
+    })
+    .filter((hint): hint is string => hint !== null);
+
+  const hint = suggestions.length ? ` ${suggestions.join("; ")}.` : "";
+  return `${listed} is not a parameter of ${name}, so the call was refused rather than answered from the wrong arguments. ${takes}${hint}`;
+}
+
 export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
   // Latest definitions, read at call time so execute never closes over stale state.
   const toolsRef = useRef(tools);
@@ -106,6 +170,13 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
                   "Call get_workflow_state to see which tools apply right now."
               };
             }
+            const complaint = parameterComplaint(
+              name,
+              current.inputSchema,
+              (input ?? {}) as Record<string, unknown>
+            );
+            if (complaint) return { error: complaint };
+
             try {
               // The IDL declares both arguments, but a caller that passes no
               // AbortSignal of its own — executeTool without options, and the

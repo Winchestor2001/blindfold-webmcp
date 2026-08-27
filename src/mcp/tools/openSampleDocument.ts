@@ -16,7 +16,7 @@ export function openSampleDocument(): WebMCPTool {
       const sample = getSample(id);
       if (!sample) {
         throw new Error(
-          `There is no sample called "${id}". The choices are leaked_memo, medical_record and vendor_contract.`
+          `"${id}" is not one of the samples. Pass document as leaked_memo, medical_record or vendor_contract.`
         );
       }
 
