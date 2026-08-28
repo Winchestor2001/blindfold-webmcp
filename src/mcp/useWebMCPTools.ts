@@ -103,6 +103,15 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
   // name -> controller, so tools can be unregistered individually.
   const activeRef = useRef(new Map<string, AbortController>());
 
+  // Calls currently inside a tool's execute, by name. A tool that is still
+  // running must not be unregistered: Chrome cancels the call if it is, and the
+  // agent is told the operation failed for work that in fact succeeded.
+  const runningRef = useRef(new Map<string, number>());
+
+  // Set by the effect so a call that finishes can ask for the surface to be
+  // reconciled again, without waiting for app state to change.
+  const reconcileRef = useRef<() => void>(() => {});
+
   // registerTool is asynchronous, so two runs of the effect can otherwise
   // overlap and reconcile the same map at the same time. React's StrictMode
   // makes that happen on every mount in development, and the symptom is a tool
@@ -133,13 +142,20 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
     async function reconcile() {
       if (cancelled) return;
 
-      // Remove tools that no longer belong to the current context.
+      // Remove tools that no longer belong to the current context - unless one
+      // is in the middle of a call. Several tools take themselves off the
+      // surface by doing their job: apply_redaction_plan is gone once the plan
+      // is applied, redact_selection once the highlight is released. Aborting
+      // there cancels the call that caused it, and Chrome hands the agent "the
+      // operation failed for an unknown transient reason" for a redaction that
+      // has already happened. The removal waits; the call's own finally asks
+      // for another pass.
       const keep = new Set(wanted);
       for (const [name, controller] of active) {
-        if (!keep.has(name)) {
-          controller.abort();
-          active.delete(name);
-        }
+        if (keep.has(name)) continue;
+        if ((runningRef.current.get(name) ?? 0) > 0) continue;
+        controller.abort();
+        active.delete(name);
       }
 
       for (const name of wanted) {
@@ -177,6 +193,9 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
             );
             if (complaint) return { error: complaint };
 
+            const running = runningRef.current;
+            running.set(name, (running.get(name) ?? 0) + 1);
+
             try {
               // The IDL declares both arguments, but a caller that passes no
               // AbortSignal of its own — executeTool without options, and the
@@ -200,6 +219,25 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
                     ? caught.message
                     : `${name} could not complete this call.`
               };
+            } finally {
+              // The claim is released on a later task, never here. Chrome
+              // carries the result out of this callback over microtasks of its
+              // own, and a registration aborted before those finish cancels a
+              // call that has already done its work. Measured in Chrome 151
+              // against a tool that drops its own registration: a microtask
+              // after execute returns still kills the call, a task later never
+              // does. Releasing synchronously and merely deferring the
+              // reconcile is not enough — the reconcile a state change of its
+              // own schedules would find the count already at zero.
+              setTimeout(() => {
+                const left = (running.get(name) ?? 1) - 1;
+                if (left > 0) {
+                  running.set(name, left);
+                  return;
+                }
+                running.delete(name);
+                reconcileRef.current();
+              }, 0);
             }
           }
         };
@@ -225,7 +263,12 @@ export function useWebMCPTools(tools: WebMCPTool[]): WebMCPStatus {
       setStatus({ supported: true, registered: [...active.keys()], error: null });
     }
 
-    queueRef.current = queueRef.current.then(reconcile, reconcile);
+    function schedule() {
+      queueRef.current = queueRef.current.then(reconcile, reconcile);
+    }
+
+    reconcileRef.current = schedule;
+    schedule();
 
     return () => {
       cancelled = true;
