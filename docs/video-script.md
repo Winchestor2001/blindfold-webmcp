@@ -1,11 +1,17 @@
 # Demo video — shot script
 
-Hard limit 3:00. Target **2:40**, which leaves twenty seconds of slack for a
-slow tool call. Public on YouTube, audio required, English.
+Hard limit 3:00. Target **2:40**. Public on YouTube, audio required, English.
 
-Narration below is ~380 words. At a calm 150 wpm that is 2:32 of speech, so
-there is room to pause. **Read it slower than feels right.** Rushing is the
-most common way a good demo reads as panic.
+Devpost's own advice shapes this cut, and two rules override instinct:
+
+- **Show it working in the first 15 seconds.** No title card, no problem
+  statement first. The hook is the product.
+- **Cut live typing, load times and dead air.** Type the prompts for real while
+  recording, then jump-cut the typing out in the edit so the prompt appears and
+  the answer follows. Never cut a human gate — the waiting *is* the demo.
+
+Narration is ~370 words. At a calm 150 wpm that is 2:28 of speech, leaving room
+to breathe. **Read it slower than feels right.**
 
 ## Before recording
 
@@ -13,110 +19,103 @@ most common way a good demo reads as panic.
 - `https://blindfold.blindfold.workers.dev` in a **fresh profile** — no
   IndexedDB state, so the surface really does start at three tools.
 - Window at 1440×900. Browser chrome visible: judges want proof it is a page.
-- The ToolsPanel open the whole time. It is the single most persuasive object
-  on screen and it must never scroll out of frame.
-- Type every prompt live. Pre-filled input reads as a fake.
+- ToolsPanel open throughout. It is the most persuasive object on screen and it
+  must never scroll out of frame.
+- Record in short clips, one per section. A single 2:40 take will fail on a
+  slow call and you will re-record twenty times.
 
 ---
 
-## 0:00 — 0:14 · The problem
+## 0:00 — 0:14 · Cold open, already working
 
-**Shot.** Full screen. Blindfold loaded, nothing open. ToolsPanel showing
-**3 tools**.
+**Shot.** Mid-workflow. `list_findings` has just returned and the masked
+previews are on screen, block characters large and legible. No preamble.
 
-> Redacted court filings get published every year with the names still in the
-> file. Someone drew a black rectangle over the text instead of removing it.
-> The obvious fix is to hand the document to an AI — which is the one thing
-> nobody with a confidential document is allowed to do.
+> This is an agent that has just found fifty-six confidential values in a
+> document. And this is everything it received back. Type, page, confidence —
+> and the value itself blocked out. It is redacting a document it is not
+> allowed to read.
 
-## 0:14 — 0:28 · The idea
+## 0:14 — 0:26 · Why that matters
 
-**Shot.** Slow zoom to the ToolsPanel, three tool names legible.
+**Shot.** Quick cut to the memo, then back.
 
-> So Blindfold asks a narrower question. Can an agent redact a document it is
-> never allowed to read? Everything here is WebMCP. Fourteen tools registered
-> by the page itself, running on this device. Nothing is uploaded, and right
-> now only three of them exist.
+> Redacted filings get published every year with the names still in the file,
+> because someone drew a rectangle instead of removing the text. The obvious
+> fix is to hand the document to an AI — the one thing nobody with a
+> confidential document may do. So the document never leaves this page.
 
-## 0:28 — 0:48 · Contextual registration
+## 0:26 — 0:44 · Contextual registration
 
-**Type.** `Open the leaked memo and tell me what it's about.`
+**Shot.** Cut back to the start: nothing open, ToolsPanel showing **3 tools**.
+Prompt appears — *"Open the leaked memo"* — document loads, panel grows to
+**5**. Hold two seconds on the panel.
 
-**Shot.** Document appears; ToolsPanel visibly grows **3 → 5**. Hold two
-seconds on the panel so the change is unmistakable.
+> All of this is WebMCP. Fourteen tools registered by the page itself — and
+> right now only three of them exist. Open a document and two more appear. A
+> tool that is absent can't be called at the wrong time, so the order of the
+> workflow is enforced by what exists, not by an error message.
 
-> The agent opens it — and the tool surface changes underneath it. Two more
-> tools exist now that a document does. A tool that is absent can't be called
-> at the wrong time, so the order of the workflow is enforced by what exists,
-> not by an error message.
+## 0:44 — 1:04 · What the agent gets
 
-## 0:48 — 1:12 · Masked findings
+**Shot.** *"Find everything sensitive, then show me the people."* Scan runs,
+56 findings, panel grows to **9**. Masked previews again.
 
-**Type.** `Find everything sensitive, then show me the people.`
+> The detector runs here, on this device. Fifty-six values, and the agent can
+> plan over all of them — remove the people, keep the amounts — without ever
+> receiving a name.
 
-**Shot.** Scan runs, 56 findings. Then the agent's `list_findings` reply, on
-screen, block characters clearly visible.
+## 1:04 — 1:30 · The disclosure gate
 
-> Fifty-six values found by a detector that runs in this page. And here is what
-> the agent actually receives back. Type, page, confidence — and the value
-> itself blocked out. It can plan over this perfectly well. It cannot read it.
-
-## 1:12 — 1:38 · The disclosure gate
-
-**Type.** `Is the sender a person or a company? Ask if you need to.`
-
-**Shot.** The DisclosureGate appears with the agent's written reason. **Pause
-two full seconds before clicking Allow.** Then the value reaching the agent.
+**Shot.** *"Is the sender a person or a company? Ask me if you need to."* The
+DisclosureGate appears with the agent's written reason. **Two full seconds of
+silence before clicking Allow.**
 
 > When it genuinely needs one real value, it has to ask — with a reason a
 > person reads. And the tool call is suspended, right now, waiting for me.
 > This is why it's WebMCP and not a server. Consent needs a screen and a human
 > in front of it. A server has neither.
 
-## 1:38 — 2:00 · Policy, plan, apply
+## 1:30 — 1:52 · Policy, plan, apply
 
-**Type.** `Redact every person and address, keep the amounts. Show me the plan
-first.`
-
-**Shot.** Rule matches 37. Preview highlights the document. ConfirmGate with
-its count. Click Apply.
+**Shot.** *"Redact every person and address, keep the amounts. Show me the plan
+first."* Rule matches 37. Preview highlights the document. ConfirmGate with its
+count. Click Apply.
 
 > One sentence of policy, thirty-seven values. I see the plan on the document
-> before I approve it, and the approval is mine.
+> before I approve it — and the approval is mine.
 
-## 2:00 — 2:22 · Proof
+## 1:52 — 2:14 · Proof
 
-**Type.** `Prove nothing leaked.`
+**Shot.** *"Prove nothing leaked, then export it."* `clean: true`, 37 checked.
+Export gate, then the file.
 
-**Shot.** `clean: true`, 37 checked. Then the export gate, then the file.
+> And it proves it against the bytes of the exported file, not against what the
+> screen draws. The characters were never written to the PDF. There is nothing
+> under the rectangle to find.
 
-> And it proves it — against the bytes of the exported file, not against what
-> the screen draws. The characters were never written to the PDF. There is
-> nothing under the rectangle to find.
+## 2:14 — 2:30 · Prompt injection
 
-## 2:22 — 2:36 · Prompt injection
-
-**Shot.** Scroll the memo to the injected instruction, let it be readable for
-a beat.
+**Shot.** Scroll the memo to the injected instruction. Let it be readable for a
+beat.
 
 > One last thing. This memo contains an instruction aimed at the agent, telling
 > it to keep everything and export immediately. It doesn't matter. Previews are
 > masked, and nothing irreversible happens without a click. The document
 > doesn't get a vote.
 
-## 2:36 — 2:40 · Close
+## 2:30 — 2:40 · Close
 
-**Shot.** Back to the ToolsPanel. Live URL on screen.
+**Shot.** ToolsPanel. Live URL on screen.
 
-> An agent that does the work, on a document it never sees.
+> Fourteen tools, and not one of them can hand the agent something a person
+> hasn't released. An agent that does the work, on a document it never sees.
 
 ---
 
-## Recording notes
+## Editing checklist
 
-- One take per section, cut between. A single 2:40 take will fail on a slow
-  call and you will re-record twenty times.
-- If a tool takes longer than three seconds, cut the wait — but never cut the
-  gate. The waiting **is** the demo.
-- Do not narrate over a gate click. Let the click land in silence.
-- Check the audio before recording the whole thing. Silent video is a fail.
+- First frame shows the product working. No logo, no title card.
+- Every typing animation cut. Every loading spinner cut.
+- **No gate cut.** The pause before a click is the point of the film.
+- Audio checked before recording the whole thing. A silent video is a fail.
