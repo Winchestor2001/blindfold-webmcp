@@ -471,7 +471,15 @@ export function requestDisclosure(
       ...current,
       disclosures: [...current.disclosures, request]
     }));
-    record("agent", "request_disclosure", `${findingId} — ${reason}`);
+    // The one record of this request. The tool used to write its own as well,
+    // which put two entries at the same second under the same action name and
+    // made a single ask read as two in the log a reviewer is judged on.
+    const subject = findingById(findingId);
+    record(
+      "agent",
+      "request_disclosure",
+      `${subject ? `${subject.type} ` : ""}${findingId} — ${reason}`
+    );
   });
 }
 

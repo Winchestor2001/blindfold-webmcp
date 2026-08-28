@@ -10,7 +10,7 @@
 // inside the reviewer's own page, so the page can stop and ask.
 
 import { contract, requireScan } from "./shared";
-import { findingById, record, requestDisclosure as ask } from "../../state/store";
+import { findingById, requestDisclosure as ask } from "../../state/store";
 
 export function requestDisclosure(): WebMCPTool {
   return {
@@ -32,7 +32,7 @@ export function requestDisclosure(): WebMCPTool {
         );
       }
 
-      record("agent", "request_disclosure", `${finding.type} ${finding.id} — ${reason}`);
+      // The gate records the request itself — see store.requestDisclosure.
       const outcome = await ask(id, reason, signal);
 
       if (!outcome.granted) {

@@ -222,6 +222,20 @@ if (granted?.disclosed !== true || refused?.disclosed !== false) {
   console.log("  GATE FAIL: expected the first request granted and the second refused");
 }
 
+// get_audit_log answers "who decided what", so one ask has to read as one ask.
+// The tool and the gate both used to record it, which put two entries at the
+// same second under the same action name and made a single request look like a
+// retry — visible in a real agent run, invisible to everything else.
+{
+  const asks = getState().audit.filter((entry) => entry.action === "request_disclosure");
+  if (asks.length === 2) {
+    console.log("  two requests, two audit entries, as expected");
+  } else {
+    failed = true;
+    console.log(`  AUDIT FAIL: two requests produced ${asks.length} entries`);
+  }
+}
+
 console.log("\nplan");
 await call("add_redaction_rule", {
   types: ["PERSON", "EMAIL", "PHONE", "ADDRESS", "ACCOUNT", "NATIONAL_ID", "IP"],
