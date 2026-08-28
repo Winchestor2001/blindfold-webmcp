@@ -215,6 +215,43 @@ if (downloaded === null) {
   console.log(`  downloaded: ${downloaded}`);
 }
 
+// A proof is about a set of values. Once the plan grows past what was proved,
+// the badge must stop claiming it and export must shut again — otherwise the
+// header says "verified" over a document that has since changed, which is the
+// one failure this project cannot afford.
+console.log("\na change to the plan retires the proof");
+const kept = getState().findings.find((finding) => finding.status === "keep");
+if (!kept) {
+  failed = true;
+  console.log("  STALE FAIL: no kept finding to move into the plan");
+} else {
+  await call("set_finding_status", { finding_ids: [kept.id], status: "redact" });
+  if (getState().verification !== null) {
+    failed = true;
+    console.log("  STALE FAIL: the verification survived a change to the plan");
+  } else {
+    console.log("  the verification was discarded, as expected");
+  }
+  expectSurface("plan changed after verifying", ["verify_no_residual_text"], ["export_redacted_document"]);
+
+  const reverified = (await call("verify_no_residual_text")) as { clean: boolean } | null;
+  if (reverified?.clean !== true) {
+    failed = true;
+    console.log("  STALE FAIL: re-verification did not come back clean");
+  }
+  expectSurface("re-verified", ["export_redacted_document"], ["apply_redaction_plan"]);
+
+  // Marking an id that is already in the plan changes nothing, so a valid proof
+  // has to survive it. Otherwise every redundant call would cost a re-verify.
+  await call("set_finding_status", { finding_ids: [kept.id], status: "redact" });
+  if (getState().verification === null) {
+    failed = true;
+    console.log("  STALE FAIL: re-marking an id already in the plan discarded a valid proof");
+  } else {
+    console.log("  a no-op status write left the proof standing");
+  }
+}
+
 console.log("\naudit");
 await call("get_audit_log");
 

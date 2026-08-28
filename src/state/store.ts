@@ -274,6 +274,29 @@ export function scan(actor: Actor): Finding[] {
 // Plan operations
 // ---------------------------------------------------------------------------
 
+/** The ids the current plan would remove. */
+function redactIds(current: State): Set<string> {
+  return new Set(
+    current.findings.filter((finding) => finding.status === "redact").map((finding) => finding.id)
+  );
+}
+
+/**
+ * A proof is about a specific set of values. Change which values are being
+ * removed and the proof stops covering the plan, so it has to go, along with any
+ * export made under it. Without this the header keeps saying "verified" over a
+ * plan that has since grown — a badge claiming a proof it no longer has, which
+ * is the exact failure this project exists to rule out. Re-marking findings that
+ * were already in the plan changes nothing and leaves the proof standing.
+ */
+function withPlanChange(current: State, next: State): State {
+  if (!current.verification && !current.exported) return next;
+  const before = redactIds(current);
+  const after = redactIds(next);
+  if (before.size === after.size && [...after].every((id) => before.has(id))) return next;
+  return { ...next, verification: null, exported: null };
+}
+
 export function setStatuses(
   ids: string[],
   status: Exclude<FindingStatus, "unreviewed">,
@@ -286,14 +309,16 @@ export function setStatuses(
   if (updated.length === 0) return { updated, unknown };
 
   const target = new Set(updated);
-  update((current) => ({
-    ...current,
-    findings: current.findings.map((finding) =>
-      target.has(finding.id)
-        ? { ...finding, status, decidedBy: actor, ruleId }
-        : finding
-    )
-  }));
+  update((current) =>
+    withPlanChange(current, {
+      ...current,
+      findings: current.findings.map((finding) =>
+        target.has(finding.id)
+          ? { ...finding, status, decidedBy: actor, ruleId }
+          : finding
+      )
+    })
+  );
   return { updated, unknown };
 }
 
@@ -341,10 +366,9 @@ export function addManualFinding(
     ruleId: null,
     disclosed: false
   };
-  update((current) => ({
-    ...current,
-    findings: [...current.findings, finding]
-  }));
+  update((current) =>
+    withPlanChange(current, { ...current, findings: [...current.findings, finding] })
+  );
   record(actor, "redact_selection", `${type} on page ${selection.page}`);
   return finding;
 }
