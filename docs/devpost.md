@@ -401,32 +401,45 @@ tool. They are hand-written and revised as prose.
 
 ### Describe the level of learning you or your team derived from the project
 
-```
-High, and specifically about the parts that are not in the documentation.
+**Dropdown, not free text.** Options are None / moderate / significant.
 
+```
+significant
+```
+
+Not a boast — it is the accurate box. The project shipped against an API newer
+than any model's training data, and three of its hardest bugs were browser
+behaviours that contradicted the published IDL. Anything less than "significant"
+would be false modesty that costs a point and buys nothing.
+
+If a free-text box appears alongside it, this is the answer:
+
+```
 Building against an API that is weeks old means the documentation tells you the
 shape and the browser tells you the truth. Three of our hardest bugs were
 behaviours that contradicted the IDL, and in each case reasoning about the
 problem produced a fix that looked correct and did not work. The one that took
-longest — a tool call being cancelled because the tool removed itself from the
-surface by succeeding — was solved by running four variants of the same release
-timing and watching which ones failed. A microtask after execute returns still
-kills the call; one task later never does.
+longest — a tool call cancelled because the tool removed itself from the surface
+by succeeding — was solved by running four variants of the same release timing
+and watching which failed. A microtask after execute returns still kills the
+call; one task later never does.
 
 The design lesson was larger than the API. Forcing every irreversible step and
 every disclosure through a human click made us decide, tool by tool, exactly
 what the agent is entitled to know — and the answer was consistently less than
 we first wrote. Writing fourteen tool descriptions by hand taught us that they
-are prose, not metadata: the ones that work say when to reach for the tool,
-name the tool that comes next, and say what is not returned so the agent stops
+are prose, not metadata: the ones that work say when to reach for the tool, name
+the tool that comes next, and say what is not returned so the agent stops
 looking for it.
 
-And the most transferable idea: absence is a better guardrail than an error
-message. A tool that does not exist cannot be called at the wrong time, cannot
-be argued with, and costs nothing to ignore.
+The most transferable idea: absence is a better guardrail than an error message.
+A tool that does not exist cannot be called at the wrong time, cannot be argued
+with, and costs nothing to ignore.
 ```
 
 ### Did you gain AI value that you can use in your career
+
+**Probably also a dropdown.** If it is, the answer is `Yes`. If it is free text:
 
 ```
 Yes, in three ways.
@@ -436,16 +449,15 @@ input schemas and error messages are a user interface for a reader that cannot
 ask a follow-up question, and they are written and revised like prose. That
 applies to any tool-using system, not just WebMCP.
 
-Second, a pattern for consent-gated automation that we expect to reuse. An
-async tool that suspends on a human decision, returns refusal as a normal
-result rather than an error, and records both outcomes in an audit log, is the
-right shape for any workflow where a person stays accountable for what the
-agent does.
+Second, a pattern for consent-gated automation that we expect to reuse. An async
+tool that suspends on a human decision, returns refusal as a normal result
+rather than an error, and records both outcomes in an audit log, is the right
+shape for any workflow where a person stays accountable for what the agent does.
 
-Third, a working method for building against APIs newer than the model:
-vendor the ground truth into the repository, forbid the model from recalling
-the API from memory, keep a known-good template beside it, and verify every
-claim against the runtime rather than the documentation. That method is what
-made an unfamiliar API productive in a week, and it will keep being useful for
-as long as the tools ship faster than the models learn about them.
+Third, a method for building against APIs newer than the model: vendor the
+ground truth into the repository, forbid the model from recalling the API from
+memory, keep a known-good template beside it, and verify every claim against the
+runtime rather than the documentation. That is what made an unfamiliar API
+productive in a week, and it will keep being useful for as long as tools ship
+faster than models learn about them.
 ```
