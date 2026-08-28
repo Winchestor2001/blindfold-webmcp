@@ -2,6 +2,13 @@
 
 **An agent redacts a document it is not allowed to read.**
 
+**Live: https://blindfold.blindfold.workers.dev**
+
+Open it in Chrome 149 or later with `chrome://flags/#enable-webmcp-testing`
+enabled, or in the ChatGPT in-app browser, and ask an agent to open the leaked
+memo. Three sample documents are built in, so nothing needs to be uploaded to
+try it.
+
 Blindfold is a WebMCP page for redacting confidential documents. The agent can
 scan the document, plan what to remove, apply the plan, prove nothing survived
 and export the file — without ever receiving the sensitive text. Tools return
