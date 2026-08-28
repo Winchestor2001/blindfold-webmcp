@@ -287,6 +287,39 @@ if (!kept) {
   }
 }
 
+// The other door to the same lie. A re-scan replaces every finding with a fresh
+// id, so the rules, the plan, the applied redactions and the proof are all about
+// values that no longer exist — and the header went on reading "verified — safe
+// to export" over a document with nothing marked for redaction. Found with a real
+// agent, which re-scanned a document it had already redacted.
+console.log("\na re-scan discards everything downstream of it");
+{
+  const before = getState();
+  if (!before.verification || before.rules.length === 0 || !before.applied) {
+    failed = true;
+    console.log("  RESCAN FAIL: expected rules, an application and a proof to be standing here");
+  }
+  await call("scan_for_sensitive_data");
+  const after = getState();
+  const stale: string[] = [];
+  if (after.verification !== null) stale.push("verification");
+  if (after.exported !== null) stale.push("exported");
+  if (after.applied !== null) stale.push("applied");
+  if (after.rules.length > 0) stale.push("rules");
+  if (after.findings.some((finding) => finding.status !== "unreviewed")) stale.push("statuses");
+  if (stale.length > 0) {
+    failed = true;
+    console.log(`  RESCAN FAIL: survived the re-scan: ${stale.join(", ")}`);
+  } else {
+    console.log("  rules, plan, application and proof all cleared, as expected");
+  }
+  expectSurface(
+    "re-scanned",
+    ["list_findings", "add_redaction_rule"],
+    ["export_redacted_document", "verify_no_residual_text"]
+  );
+}
+
 console.log("\naudit");
 await call("get_audit_log");
 

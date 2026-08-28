@@ -261,11 +261,36 @@ export function scan(actor: Actor): Finding[] {
   const doc = state.doc;
   if (!doc) return [];
   const findings = detectInPages(doc.pages);
-  update((current) => ({ ...current, findings, scanned: true }));
+
+  // A scan mints new ids, so everything downstream of the last one is about
+  // findings that no longer exist: the rules, the plan, the application, the
+  // proof and the export all describe a set that has just been thrown away.
+  // Keep any of it and the header goes on saying "verified — safe to export"
+  // over a document with nothing marked for redaction — the same badge lying
+  // that withPlanChange exists to stop, reached through another door.
+  //
+  // The rules go with the rest rather than being re-run against the new
+  // findings. A person approved a plan of specific values; silently rebuilding
+  // one they have not seen is the sort of decision this application does not
+  // take on its own.
+  const discarded =
+    state.rules.length > 0 || state.applied !== null || state.verification !== null;
+
+  update((current) => ({
+    ...current,
+    findings,
+    scanned: true,
+    rules: [],
+    applied: null,
+    verification: null,
+    exported: null,
+    previewing: false
+  }));
   record(
     actor,
     "scan_for_sensitive_data",
-    `${findings.length} candidate values across ${doc.pages.length} pages`
+    `${findings.length} candidate values across ${doc.pages.length} pages` +
+      (discarded ? " — earlier rules, plan and proof discarded" : "")
   );
   return findings;
 }
