@@ -154,7 +154,11 @@ export const TOOL_SPECS: Record<ToolName, ToolSpec> = {
       },
       required: ["finding_id", "reason"],
       additionalProperties: false
-    }
+    },
+    // The one tool that hands over document text verbatim, so the one that
+    // most needs the hint. A disclosed value carries whatever the document
+    // put there, including an instruction written to be read by an agent.
+    annotations: { untrustedContentHint: true }
   },
 
   add_redaction_rule: {
