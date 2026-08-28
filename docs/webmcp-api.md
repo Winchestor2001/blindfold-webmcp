@@ -268,6 +268,33 @@ Suffix List, which includes `workers.dev`. An exact-origin token may still be is
 Click a tool → fill parameters → **Run tool**. This executes the tool without an agent and is
 the fastest way to verify logic.
 
+## 14. Testing with a real agent
+
+The flag alone does not put an agent in the browser. Chrome's own documentation points at a
+separate extension for this:
+
+> Install the Model Context Tool Inspector Extension to experiment with an agent and see how
+> WebMCP tools work in live demos or your own applications.
+
+**WebMCP — Model Context Tool Inspector**, by Francois Beaufort (Google Ireland, Ltd.).
+Requires Chrome 150.0.7861.0 or later with `chrome://flags/#enable-webmcp-testing` enabled.
+No API key, no sign-in.
+
+- Install from the Chrome Web Store, or `Load unpacked` from source after `npm install`.
+- Click the extension's action icon in the toolbar. It opens in the **Side Panel**.
+- *Manual mode* — pick a tool from the dropdown, enter arguments as JSON in the text area,
+  **Execute Tool**. The result appears in the side panel.
+- *Agent mode* — talk to it in natural language, "to see if it can correctly identify and
+  invoke the appropriate WebMCP tools". Prompts go to `gemini-3-flash-preview` by default.
+  This is separate from the Gemini in Chrome features.
+
+Chrome's docs carry a warning about the extension: it "does not implement production-level
+security boundaries" and should not be pointed at untrusted websites.
+
+This is the surface that satisfies Rule 3 step 2. The DevTools panel in section 13 runs a tool
+without an agent and proves the logic; the extension is what shows whether a description is
+written well enough for an agent to pick the right tool from a natural phrasing.
+
 ---
 
 ## Sources
@@ -282,4 +309,7 @@ the fastest way to verify logic.
 | DevTools panel | https://developer.chrome.com/docs/devtools/application/webmcp |
 | Origin trial | https://developer.chrome.com/blog/ai-webmcp-origin-trial |
 | ChatGPT in-app browser | https://learn.chatgpt.com/docs/webmcp |
+| Model Context Tool Inspector (extension) | https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd |
+| Model Context Tool Inspector (source) | https://github.com/beaufortfrancois/model-context-tool-inspector |
+| WebMCP demos | https://github.com/GoogleChromeLabs/webmcp-tools/tree/main/demos |
 | Reference template | https://github.com/cloudflare/agents/tree/main/examples/webmcp-react |
