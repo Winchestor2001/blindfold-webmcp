@@ -43,6 +43,7 @@ export function listFindings(): WebMCPTool {
         Math.max(Number(input.limit ?? DEFAULT_LIMIT) || DEFAULT_LIMIT, 1),
         MAX_LIMIT
       );
+      const offset = Math.max(Number(input.offset ?? 0) || 0, 0);
 
       const matched = state.findings.filter((finding) => {
         if (types.length > 0 && !types.includes(finding.type)) return false;
@@ -51,7 +52,7 @@ export function listFindings(): WebMCPTool {
         return true;
       });
 
-      const entries = matched.slice(0, limit).map((finding) => ({
+      const entries = matched.slice(offset, offset + limit).map((finding) => ({
         id: finding.id,
         type: finding.type,
         page: finding.page,
@@ -65,20 +66,28 @@ export function listFindings(): WebMCPTool {
         )
       }));
 
-      return fitList(entries, (shown, omitted) => ({
-        matched: matched.length,
-        returned: shown.length,
-        not_returned: matched.length - shown.length,
-        findings: shown,
-        // The agent cannot see that a result was trimmed unless it is told, and
-        // an agent that thinks it has seen everything will stop looking.
-        note:
-          matched.length > shown.length
-            ? `${matched.length - shown.length} more findings match. Narrow by type, page or status rather than asking for a larger limit.`
-            : undefined,
-        trimmed_for_output_budget: omitted > 0 || undefined,
-        values: "masked — call request_disclosure for a specific value, with a reason"
-      }));
+      return fitList(entries, (shown, omitted) => {
+        const next = offset + shown.length;
+        const remaining = Math.max(matched.length - next, 0);
+        return {
+          matched: matched.length,
+          returned: shown.length,
+          offset: offset || undefined,
+          not_returned: remaining,
+          findings: shown,
+          // The agent cannot see that a result was trimmed unless it is told, and
+          // an agent that thinks it has seen everything will stop looking. Naming
+          // the next offset matters as much as the count: told only to narrow its
+          // filters, an agent that has already narrowed to one page and one type
+          // has nowhere left to go, and gives up believing it has seen the list.
+          note:
+            remaining > 0
+              ? `${remaining} more match. Call again with offset ${next} for the next ones, or narrow by type, page or status.`
+              : undefined,
+          trimmed_for_output_budget: omitted > 0 || undefined,
+          values: "masked — call request_disclosure for a specific value, with a reason"
+        };
+      });
     }
   };
 }

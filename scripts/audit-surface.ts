@@ -128,6 +128,41 @@ expectSurface(
 await call("list_findings", { limit: 40 });
 await call("list_findings", { types: ["PERSON"], status: "unreviewed" });
 
+// The output cap can trim a result below the requested limit, and a real agent
+// hit this: narrowed to one type on one page, still trimmed, it had nowhere left
+// to go and stopped believing there was more. Paging by offset is the way out,
+// so the tail has to be reachable — every match, in a finite number of calls.
+console.log("\nthe output cap does not hide findings");
+{
+  const seen = new Set<string>();
+  let offset = 0;
+  let calls = 0;
+  let matched = 0;
+  for (;;) {
+    calls += 1;
+    const page = (await call("list_findings", {
+      types: ["PERSON"],
+      limit: 40,
+      offset
+    })) as { matched: number; returned: number; not_returned: number; findings: { id: string }[] };
+    matched = page.matched;
+    for (const finding of page.findings) seen.add(finding.id);
+    if (page.not_returned === 0) break;
+    if (page.returned === 0 || calls > 10) {
+      failed = true;
+      console.log("  PAGING FAIL: offset made no progress");
+      break;
+    }
+    offset += page.returned;
+  }
+  if (seen.size === matched) {
+    console.log(`  reached all ${matched} PERSON findings in ${calls} calls`);
+  } else {
+    failed = true;
+    console.log(`  PAGING FAIL: matched ${matched} but only ${seen.size} were reachable`);
+  }
+}
+
 console.log("\nprivacy invariant");
 {
   // Every finding gets a preview, and every preview is searched for every

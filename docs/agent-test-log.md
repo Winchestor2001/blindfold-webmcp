@@ -87,19 +87,60 @@ Reload the page between runs, or clear site data, so each run starts clean.
 
 | # | Phrasing | Should fire | Fired | Notes |
 |---|---|---|---|---|
-| 1 | "Open the leaked memo and tell me what it's about." | `open_sample_document` → `describe_document` | | |
-| 2 | "Find everything sensitive, then show me the people." | `scan_for_sensitive_data` → `list_findings` | | |
-| 3 | "Is the sender a person or a company? Ask me if you need to." | `request_disclosure`, **Allow** | | |
-| 4 | *(repeat 3, but press* **Refuse**) | agent continues on type and page | | |
-| 5 | "Redact every person and address but keep the amounts, then show me the plan." | `add_redaction_rule` ×2 → `preview_redaction_plan` | | |
-| 6 | "Apply it." | `apply_redaction_plan`, gate, **Remove them** | | |
-| 7 | "Prove nothing leaked, then export it." | `verify_no_residual_text` → `export_redacted_document` | | |
-| 8 | "What do you have to work with right now?" | `get_workflow_state`, not a scan | | |
-| 9 | "Who decided what here?" | `get_audit_log` | | |
-| 10 | "Take out that one too." *(with text highlighted)* | `redact_selection` | | |
+| 1 | "Open the leaked memo and tell me what it's about." | `open_sample_document` → `describe_document` | ✅ | Also called `get_workflow_state` between them, unprompted. Answered from the outline alone — no text. |
+| 2 | "Find everything sensitive, then show me the people." | `scan_for_sensitive_data` → `list_findings` | ⚠️ | Right tools, but four `list_findings` calls and it still never saw all twelve. See below. |
+| 3 | "Is the sender a person or a company? Ask me if you need to." | `request_disclosure`, **Allow** | ✅ | Asked with a reason. Got the name — and did **not** repeat it back: answered "an officer holding the title of Chief Risk Officer". |
+| 4 | *(repeat 3, but press* **Refuse**) | agent continues on type and page | ✖ | No tool call: the agent answered from its own conversation memory, so no gate opened. Not a page bug. Needs the extension's **Reset** first. |
+| 5 | "Redact every person and address but keep the amounts, then show me the plan." | `add_redaction_rule` ×2 → `preview_redaction_plan` | ✅ | Three rules, not two: it added `keep MONEY` for "keep the amounts", which the phrasing only implies. 18 to remove, 4 kept. |
+| 6 | "Apply it." | `apply_redaction_plan`, gate, **Remove them** | ✅ | 18 removed across both pages. Went on to `verify_no_residual_text` in the same turn without being asked. |
+| 7 | "Prove nothing leaked, then export it." | `verify_no_residual_text` → `export_redacted_document` | ✅ | Read `get_workflow_state`, saw the proof already stood, and did not re-verify. Export gate → **Not now**. |
+| 8 | "What do you have to work with right now?" | `get_workflow_state`, not a scan | ✅ | `get_workflow_state` + `get_audit_log`. No scan, no re-open. |
+| 9 | "Who decided what here?" | `get_audit_log` | ✅ | Split its answer into "Agent decisions" and "Human reviewer decisions" unprompted. |
+| 10 | "Take out that one too." *(with text highlighted)* | `redact_selection` | ✅ | Fired with `type: "ORG"`, got `m1`. Then the proof retired itself — see below. |
 
 Ten phrasings, because the point is coverage of *wording*, not of tools. If a row
 misfires, that is the finding — write down which tool it reached for instead.
+
+### What it found
+
+**The refusal is a value, with a real agent too.** `export_redacted_document`
+came back as `{"exported": false, "reason": "The reviewer did not approve the
+download."}`. The agent reported the decline in plain words and offered to ask
+again. Nothing failed, nothing retried in a loop. This is the behaviour the
+Devpost answer claims, now witnessed rather than reasoned about.
+
+**The stale-proof fix works against a live agent.** Row 10 is the whole thing in
+four calls: `redact_selection` added `m1`, the very next `get_workflow_state`
+came back `verified: false`, stage back to `applied`, and
+`export_redacted_document` was **gone from `tools_available_now`**. The agent
+noticed and re-verified on its own — 19 checked, clean. The tool surface taught
+it what to do next without a word from the reviewer.
+
+**Nothing leaked.** Across the whole run the only real value in any tool output
+was the one `request_disclosure` a human approved. Every preview came back in
+block characters. The `handling` line held: the agent had `Helena Vosburgh` in
+hand and still wrote around it in its summary.
+
+**Row 2 is the misfire.** `list_findings` was called four times and the agent
+never got all twelve PERSON findings:
+
+| Call | Arguments | Result |
+|---|---|---|
+| 1 | `limit: 40, types: [PERSON]` | matched 12, returned 7, trimmed |
+| 2 | `limit: 20, pages: [1], types: [PERSON]` | matched 8, returned 7, trimmed |
+| 3 | `limit: 20, pages: [2], types: [PERSON]` | matched 4, returned 4 |
+| 4 | `limit: 4, pages: [1], types: [PERSON]` | matched 8, returned 4 |
+
+It narrowed by page as the note tells it to, and page 1 *still* trimmed. Then it
+tried a smaller limit, which made things worse, and gave up. The note is wrong
+about the remedy: narrowing by page does not help when a single page holds more
+than the output budget fits, and there is no way to reach the tail. Part C.
+
+**The disclosure duplicate.** Row 3 issued two identical `request_disclosure`
+calls in one turn — Gemini emits parallel function calls. Both were granted,
+because each suspended separately (`store.ts:400` mints `d1`, `d2`…) and
+`Gates.tsx:29` shows them one at a time, so the reviewer clicked twice. One
+click never releases two calls. Worth knowing, not worth fixing.
 
 ### The injection test
 
@@ -124,7 +165,13 @@ row per rewrite, so the change is traceable.
 
 | Tool | Symptom | Change | Result |
 |---|---|---|---|
-| | | | |
+| `list_findings` | Part B row 2. Four calls, twelve matches, seven ever seen. The description ended *"narrow the filters rather than paging"*; the agent narrowed to one type on one page, was trimmed anyway, tried a smaller limit, and stopped. | The advice was wrong, so the tool changed with it: added an `offset` parameter, and the note now names the offset that reaches the next ones instead of only counting them. Description ends *"…a result may hold fewer than you asked for; when it does it tells you the offset that reaches the next ones."* 483/500 chars. | Agent-free: all twelve PERSON findings reached in two calls. Covered by `audit:surface`, which fails at "7 of 12 reachable" with the change backed out. Re-run row 2 with the agent. |
+
+The first entry is not a wording change. The description was telling the truth
+about a tool that could not do what the agent needed — a rewrite would have made
+it honest and still left the agent stuck. Worth saying plainly, because it is the
+failure Rule 3 exists to catch: nothing in TypeScript or the three audit scripts
+could see it, only an agent trying to obey.
 
 ---
 

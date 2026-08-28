@@ -99,7 +99,7 @@ export const TOOL_SPECS: Record<ToolName, ToolSpec> = {
     name: "list_findings",
     title: "List findings",
     description:
-      "List findings from the last scan, narrowed by type, page or review status. Sensitive text is masked: each finding carries a short preview with the value itself replaced by blocks. Use the returned ids with set_finding_status, add_redaction_rule or request_disclosure. Confidence at or below 0.6 means the detector is guessing and a person should decide. Output is capped, so the result also reports how many matched in total; narrow the filters rather than paging.",
+      "List findings from the last scan, narrowed by type, page or review status. Sensitive text is masked: each finding carries a short preview with the value itself replaced by blocks. Use the returned ids with set_finding_status, add_redaction_rule or request_disclosure. Confidence at or below 0.6 means the detector is guessing and a person should decide. Output is capped, so a result may hold fewer than you asked for; when it does it tells you the offset that reaches the next ones.",
     inputSchema: {
       type: "object",
       properties: {
@@ -126,6 +126,12 @@ export const TOOL_SPECS: Record<ToolName, ToolSpec> = {
           maximum: 40,
           description:
             "How many findings to return, up to 40. Defaults to 15; the result is trimmed further if it would exceed the output cap."
+        },
+        offset: {
+          type: "integer",
+          minimum: 0,
+          description:
+            "Skip this many matches before returning any. Use the offset the previous result gave you to reach findings the output cap left out."
         }
       },
       additionalProperties: false
