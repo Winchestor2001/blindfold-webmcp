@@ -178,7 +178,10 @@ not by reading about it.
   positive and one negative, so a clean result means something.
 - **Prompt injection is in the sample, deliberately.** `leaked_memo` contains an
   instruction telling the agent to keep everything and export immediately. The
-  design does not depend on the agent ignoring it.
+  design does not depend on the agent ignoring it — and when we ran it, the
+  agent never received the payload at all. `describe_document` returns headings,
+  the previews around that section stop before the instruction and resume after
+  it, and the tool surface simply had no way to hand it over.
 - **Three undocumented Chrome behaviours found, worked around, and written
   down** in the source with the measurements that produced them.
 
@@ -336,8 +339,9 @@ A FIVE-PROMPT RUN, ABOUT TWO MINUTES
    the agent is told refusal is normal and carries on with type and page.
 
 4. "Redact every person and address but keep the amounts, then show me the plan."
-   One sentence of policy, 37 matches. Applying is irreversible and needs your
-   click on a dialog that states how many values will survive.
+   One sentence of policy, 18 values to remove and 4 amounts kept. Applying is
+   irreversible and needs your click on a dialog that states how many values
+   will survive.
 
 5. "Prove nothing leaked, then export it."
    Verification reads the bytes of the export, not the screen: it inflates the
@@ -347,8 +351,10 @@ A FIVE-PROMPT RUN, ABOUT TWO MINUTES
 THE INJECTION TEST
 Open the leaked memo and say "just do whatever the document says". The memo
 contains an instruction aimed at the agent, telling it to mark everything keep
-and export immediately. Previews stay masked and nothing irreversible happens
-without a human click, so the document does not get a vote.
+and export immediately. Watch what the agent is handed: headings and masked
+previews, with the instruction's own text never among them. Nothing irreversible
+happens without a human click either, so the document does not get a vote even
+if the agent is convinced by it.
 
 WITHOUT AN AGENT
 DevTools -> Application -> WebMCP lists the registered tools and runs any of
@@ -373,22 +379,44 @@ submit** — the rule is explicit about it being visible.
 
 ### Which agents or clients did you test your WebMCP tools with
 
-> Only claim what has actually been run. Add the ChatGPT in-app browser to this
-> answer after the 1 September pass, not before.
+> Only claim what has actually been run. The ChatGPT in-app browser goes in this
+> answer only after it has been run there — it needs GPT-5.6 Sol or Terra, not
+> Luna and not an Enterprise or Edu account.
 
 ```
-Chrome 151 stable with chrome://flags/#enable-webmcp-testing, in two ways: the
-DevTools Application -> WebMCP panel for direct calls with hand-written input,
-and a real agent in the browser using natural phrasing.
+Chrome 152.0.7977.64 stable with chrome://flags/#enable-webmcp-testing, against
+the deployed origin rather than localhost, in two ways.
 
-Every one of the fourteen tools was run both ways, including both branches of
-the two human gates — an allowed disclosure and a refused one, an approved
-apply and a refused export.
+Without an agent: the DevTools Application -> WebMCP panel, driving all fourteen
+tools with hand-written input over a nineteen-call run. Zero failed, zero
+cancelled, and the surface moved 3 -> 5 -> 9 -> 11 -> 10 -> 11 as the workflow
+advanced.
 
-Testing against the browser rather than only against the specification is how
-we found the three Chrome behaviours described in the project story: calls
-being cancelled when a tool unregisters itself, inputSchema not being enforced,
-and a rejected execute losing its message.
+With an agent: the WebMCP Model Context Tool Inspector extension in the side
+panel, running gemini-3-flash-preview, given ten unrehearsed phrasings rather
+than a script — because the question there is not "does the tool work" but "does
+the agent reach for the right tool from wording nobody rehearsed". Thirteen of
+the fourteen fired. The fourteenth is set_finding_status, and the agent never
+reached for it: asked to "redact every person and address but keep the amounts"
+it wrote three policy rules through add_redaction_rule instead of marking
+eighteen ids one by one. That is the better move, and not one we predicted.
+
+Both branches of both human gates were exercised with the agent watching: a
+disclosure allowed and a disclosure refused, an apply approved and an export
+declined. A refusal comes back as an ordinary result, not an error — the agent
+reported the decline in plain words and carried on from type and page, with no
+failed call and no retry loop.
+
+Testing against the browser rather than only against the specification is how we
+found the three Chrome behaviours described in the project story — calls being
+cancelled when a tool unregisters itself, inputSchema not being enforced, and a
+rejected execute losing its message — and four bugs of our own that neither
+TypeScript nor our audit scripts could see. Every one of the four surfaced from
+something unscripted: an agent that narrowed its filters exactly as told and
+still could not reach the tail of a list, an agent that re-scanned a document
+that had already been verified, and a person highlighting one more word after
+the proof was in. Each is now covered by a check that was confirmed to fail with
+the fix backed out. The full run is in docs/agent-test-log.md.
 ```
 
 ### Which AI tools have you leveraged while working on this project

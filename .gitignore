@@ -4,3 +4,8 @@ dist/
 .dev.vars
 *.log
 .DS_Store
+
+# demo footage and voice takes — large, and not part of the app
+vo/*.mp4
+vo/en/*
+!vo/en/.gitkeep

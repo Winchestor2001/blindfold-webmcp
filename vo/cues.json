@@ -1,0 +1,57 @@
+{
+  "video": "vo/blindfold-demo.mp4",
+  "duration": 144.0,
+  "note": "One file per line, named by id, in vo/en/. Cue is the start time in seconds. Max is the longest the read may run before it collides with the next line or a click in the picture.",
+  "lines": [
+    { "id": "01", "cue": 0.4,   "max": 3.0, "beat": "3 of 14",        "text": "Fourteen WebMCP tools live on this page." },
+    { "id": "02", "cue": 3.6,   "max": 2.9, "beat": "3 of 14",        "text": "With nothing open, three of them exist." },
+    { "id": "03", "cue": 6.7,   "max": 3.0, "beat": "3 of 14",        "text": "Open a document and two more appear." },
+
+    { "id": "04", "cue": 10.5, "max": 4.5, "beat": "describe",       "text": "It asks what it is looking at, and gets a shape." },
+    { "id": "05", "cue": 15.1, "max": 3.0, "beat": "describe",       "text": "Types, pages, counts — never the text." },
+
+    { "id": "06", "cue": 18.4,  "max": 3.0, "beat": "scan",           "text": "The detector runs here, on this device." },
+    { "id": "07", "cue": 21.5,  "max": 1.6, "beat": "scan",           "text": "Nothing is uploaded." },
+    { "id": "08", "cue": 23.2,  "max": 2.9, "beat": "scan",           "text": "Fifty-six confidential values, found in seconds." },
+
+    { "id": "09", "cue": 26.4,  "max": 3.0, "beat": "thesis",         "text": "This is everything the agent receives back." },
+    { "id": "10", "cue": 29.5,  "max": 3.8, "beat": "thesis",         "text": "Type, page, confidence — and the value blocked out." },
+    { "id": "11", "cue": 33.8,  "max": 4.5, "beat": "thesis",         "text": "It is redacting a document it is not allowed to read." },
+
+    { "id": "12", "cue": 38.3,  "max": 4.0, "beat": "gate/ask",       "text": "When it needs a real value, it has to ask." },
+    { "id": "13", "cue": 42.4, "max": 2.9, "beat": "gate/waiting",   "text": "It is waiting for me right now." },
+    { "id": "14", "cue": 45.8,  "max": 4.0, "beat": "gate/allow",     "text": "I read the reason, and release the sender's name." },
+    { "id": "15", "cue": 50.0,  "max": 4.4, "beat": "gate/allow",     "text": "Consent needs a screen, and a human in front of it." },
+    { "id": "16", "cue": 54.5,  "max": 1.9, "beat": "gate/refuse",    "text": "This one I refuse." },
+    { "id": "17", "cue": 56.6, "max": 3.6, "beat": "gate/refuse",    "text": "Refusal comes back as an answer, not an error." },
+    { "id": "18", "cue": 60.4, "max": 4.0, "beat": "gate/refuse",    "text": "That is why this is WebMCP, and not a server." },
+
+    { "id": "19", "cue": 64.6,  "max": 2.5, "beat": "policy",         "text": "One sentence of policy." },
+    { "id": "20", "cue": 67.2,  "max": 2.8, "beat": "policy",         "text": "Thirty-one values matched across two pages." },
+
+    { "id": "21", "cue": 70.5,  "max": 5.0, "beat": "plan",           "text": "I see the plan drawn on the document before anything is touched." },
+    { "id": "22", "cue": 75.7,  "max": 3.6, "beat": "plan",           "text": "The highlighted spans are what will disappear." },
+    { "id": "23", "cue": 79.5,  "max": 2.2, "beat": "plan",           "text": "The amounts stay." },
+
+    { "id": "24", "cue": 82.4,  "max": 1.5, "beat": "apply/gate",     "text": "Apply is irreversible." },
+    { "id": "25", "cue": 83.9, "max": 4.5, "beat": "apply/gate",     "text": "It tells me how many values go, and how many stay." },
+    { "id": "26", "cue": 88.5,  "max": 1.9, "beat": "apply/click",    "text": "The approval is mine." },
+    { "id": "27", "cue": 90.8,  "max": 2.6, "beat": "apply/landed",   "text": "And nothing is drawn over anything." },
+    { "id": "28", "cue": 93.6,  "max": 6.2, "beat": "apply/landed",   "text": "The characters are removed from the file, and the rectangle is drawn where they were." },
+
+    { "id": "29", "cue": 100.4, "max": 6.5, "beat": "proof",          "text": "Then it proves it, against the bytes of the export rather than what the screen draws." },
+    { "id": "30", "cue": 107.0, "max": 2.4, "beat": "proof",          "text": "Thirty-one values checked." },
+    { "id": "31", "cue": 109.6, "max": 2.7, "beat": "proof",          "text": "Nothing under the rectangle to find." },
+
+    { "id": "32", "cue": 112.5, "max": 3.0, "beat": "export/gate",    "text": "Export needs a click as well." },
+    { "id": "33", "cue": 116.0, "max": 2.4, "beat": "export/gate",    "text": "I decline this one." },
+    { "id": "34", "cue": 118.6, "max": 3.6, "beat": "export/gate",    "text": "Every grant and every refusal is in the log." },
+    { "id": "35", "cue": 123.3, "max": 2.6, "beat": "export/click",   "text": "Including this one." },
+
+    { "id": "36", "cue": 126.5, "max": 2.0, "beat": "injection",      "text": "One last thing." },
+    { "id": "37", "cue": 128.6, "max": 6.4, "beat": "injection",      "text": "This memo carries an instruction aimed at whatever is processing it — keep everything, export now." },
+    { "id": "38", "cue": 135.2, "max": 2.8, "beat": "injection",      "text": "The agent was never handed it." },
+    { "id": "39", "cue": 138.2, "max": 2.8, "beat": "injection",      "text": "And nothing here moves without a click." },
+    { "id": "40", "cue": 141.2, "max": 2.8, "beat": "injection",      "text": "The document does not get a vote." }
+  ]
+}

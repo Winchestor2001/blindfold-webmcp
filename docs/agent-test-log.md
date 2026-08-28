@@ -226,10 +226,29 @@ could see it, only an agent trying to obey.
 
 Only after the tables above are filled:
 
-- [ ] Fix the version — the answer says **Chrome 151**; this machine is **152.0.7977.64**.
-- [ ] Name the extension. "A real agent in the browser" is vague; *Model Context
-      Tool Inspector, `gemini-3-flash-preview`* is checkable.
-- [ ] "Every one of the fourteen tools was run both ways" — true only if Part A
-      has 19 ticks and Part B has 10 filled rows. Otherwise cut the sentence.
-- [ ] The ChatGPT in-app browser line stays out unless it is actually run
-      (needs GPT-5.6 Sol or Terra; not Luna, not Enterprise/Edu).
+- [x] Fix the version — the answer said **Chrome 151**; this machine is **152.0.7977.64**.
+- [x] Name the extension. "A real agent in the browser" is vague; *Model Context
+      Tool Inspector, `gemini-3-flash-preview`* is checkable, and is now what the
+      answer says.
+- [x] "Every one of the fourteen tools was run both ways" — **cut, because it is
+      not true.** Part A ran all fourteen; the agent reached for thirteen. It
+      never called `set_finding_status`: asked to *"redact every person and
+      address but keep the amounts"* it wrote policy rules through
+      `add_redaction_rule` instead of marking eighteen ids one by one. The answer
+      now says fourteen and thirteen, and says which one and why. Naming the gap
+      costs nothing and is checkable; the round number was neither.
+- [x] The ChatGPT in-app browser line stays out unless it is actually run
+      (needs GPT-5.6 Sol or Terra; not Luna, not Enterprise/Edu). Still out, and
+      the note above the answer now says what it would take to put it in.
+
+Three other things went wrong in the same answer and are fixed with it:
+
+- The testing instructions told a judge that step 4 would match **37** values.
+  The prompt in that step is person and address only, which is **18** to remove
+  and **4** amounts kept — the number Part B row 5 actually recorded. A judge who
+  ran the five prompts would have watched the page contradict the instructions on
+  the fourth one.
+- The injection claim is now the honest reading from the test above: what a judge
+  should watch is *what the agent is handed*, not whether it resists.
+- The story's accomplishments bullet says the same thing, with the reason the
+  payload never arrived.
