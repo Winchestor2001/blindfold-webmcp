@@ -14,6 +14,7 @@ than guessing — a blank row is a row still to run.
 | | |
 |---|---|
 | Chrome | 152.0.7977.64 (in range 149–156) |
+| Run on | 29 August 2026, against the deployed origin |
 | Flag | `chrome://flags/#enable-webmcp-testing` → **already Enabled** in this profile |
 | Page | https://blindfold.blindfold.workers.dev — or `pnpm dev` on http://127.0.0.1:5173 |
 | Agent-free surface | DevTools → Application → WebMCP |
@@ -35,14 +36,14 @@ Run the rows in order; each one registers the tools the next row needs.
 
 | # | Tool | Input | Expect | Ran |
 |---|---|---|---|---|
-| 1 | `get_workflow_state` | `{}` | 3 tools registered, no document | ☐ |
-| 2 | `open_sample_document` | `{"document":"leaked_memo"}` | id, title, kind, 2 pages | ☐ |
-| 3 | `get_workflow_state` | `{}` | **5** registered | ☐ |
-| 4 | `describe_document` | `{}` | kind, pages, entity histogram — no text | ☐ |
-| 5 | `scan_for_sensitive_data` | `{}` | 56 findings | ☐ |
-| 6 | `get_workflow_state` | `{}` | **9** registered | ☐ |
-| 7 | `list_findings` | `{"types":["PERSON"],"limit":10}` | previews with the value in blocks | ☐ |
-| 8 | `request_disclosure` | `{"finding_id":"<id from row 7>","reason":"Deciding whether the sender is a person or a company."}` | **suspends** until a click. Run it twice: once **Allow**, once **Refuse**. The refusal must come back as a value, not an error | ☐ |
+| 1 | `get_workflow_state` | `{}` | 3 tools registered, no document | ✅ |
+| 2 | `open_sample_document` | `{"document":"leaked_memo"}` | id, title, kind, 2 pages | ✅ |
+| 3 | `get_workflow_state` | `{}` | **5** registered | ✅ |
+| 4 | `describe_document` | `{}` | kind, pages, entity histogram — no text | ✅ |
+| 5 | `scan_for_sensitive_data` | `{}` | 56 findings | ✅ 56 |
+| 6 | `get_workflow_state` | `{}` | **9** registered | ✅ |
+| 7 | `list_findings` | `{"types":["PERSON"],"limit":10}` | previews with the value in blocks | ✅ matched 12, returned 7, trimmed by the output cap |
+| 8 | `request_disclosure` | `{"finding_id":"<id from row 7>","reason":"Deciding whether the sender is a person or a company."}` | **suspends** until a click. Run it twice: once **Allow**, once **Refuse**. The refusal must come back as a value, not an error | ✅ both branches. **Refuse left the Failed counter at 0** — the refusal came back as a value, not a rejected call |
 | 9 | `set_finding_status` | `{"finding_ids":["<id>"],"status":"redact"}` | updated count + plan counts | ☐ |
 | 10 | `add_redaction_rule` | `{"types":["PERSON","ADDRESS","EMAIL","PHONE"],"action":"redact"}` | rule id, 31 matched | ☐ |
 | 11 | `get_workflow_state` | `{}` | **11** registered | ☐ |
