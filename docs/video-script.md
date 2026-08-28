@@ -131,6 +131,42 @@ Do not re-edit these; they were solved in the capture, not in post.
 - No title card, no logo. The first frame is the product.
 - The bookmarks bar and the browser-automation infobar are cropped out; the tab
   strip and address bar are kept, because judges want proof it is a real page.
+- The `Claude` tab that sat between the two Blindfold tabs is patched out with a
+  cloned piece of empty tab strip. Browser chrome does not move during a take,
+  so the patch is static and exact — no blur, no seam, and the active tab's
+  outline beside it is untouched.
 - No cursor of any kind appears — neither the system pointer nor the automation
   extension's synthetic one.
 - No gate is cut short. The pause before each click is the point of the film.
+
+---
+
+## The Russian guide track
+
+`blindfold-demo-ru-guide.mp4` is the same picture with a synthesised Russian
+voice laid on the cues above. It exists to answer one question before any real
+audio is recorded: **does a human reading this actually fit?** It does — every
+block lands inside its beat at 165 words per minute, with about twenty seconds
+of silence left over across the film.
+
+It is a guide track, not a submission asset. The voice is macOS `Milena`, the
+only Russian voice installed, and it is a compact system voice: the timing is
+right, the delivery is not. The submitted video wants a human reading the
+English above.
+
+Regenerate it with `vo/measure.py` (per-block durations against each window) and
+`vo/mux.py` (lays each block at its cue and normalises to −16 LUFS).
+
+| Cue | Russian |
+|---|---|
+| 0:00 | Здесь живут четырнадцать инструментов WebMCP. Пока ничего не открыто, существуют три. Откройте документ — появятся ещё два. |
+| 0:10 | Агент спрашивает, что перед ним, и получает форму: типы, страницы, количество. Но не текст. |
+| 0:18 | Детектор работает здесь, на этом устройстве. Ничего не загружается. Пятьдесят шесть значений. |
+| 0:26 | Это всё, что получает агент. Тип, страница, уверенность — и само значение, закрашенное. Он редактирует документ, который не имеет права читать. |
+| 0:38 | Когда ему действительно нужно одно настоящее значение, он обязан спросить, и объяснить причину человеческим языком. Вызов инструмента приостановлен прямо сейчас и ждёт меня. Имя отправителя я открываю. Следующий запрос я отклоняю — и отказ возвращается как ответ, а не как ошибка. Вот почему это WebMCP, а не сервер. Согласию нужен экран и человек перед ним. |
+| 1:04 | Одно предложение политики. Совпал тридцать один элемент. |
+| 1:10 | Я вижу план прямо на документе, до того как что-либо тронуто. Подсвеченное исчезнет. Суммы остаются. И ни одного значения агент при этом не прочитал. |
+| 1:22 | Применение необратимо, поэтому система останавливается и говорит, сколько значений уйдёт и сколько останется. Решение — моё. И ничего не закрашивается поверх: символы удаляются из файла, а прямоугольник рисуется там, где они были. |
+| 1:40 | Затем это доказывается — по байтам экспорта, а не по тому, что рисует экран. Тридцать один элемент проверен. Под прямоугольником искать нечего. |
+| 1:52 | Экспорт тоже требует нажатия. Здесь я отказываюсь — и отказ записан в журнал, рядом с каждым раскрытием, которое я разрешил, и тем, которое отклонил. |
+| 2:06 | И последнее. В этой записке есть инструкция, адресованная тому, кто её обрабатывает: сохранить все находки и немедленно экспортировать. Это ничего не меняет. Превью закрыты, и ничто необратимое не происходит без нажатия. У документа нет права голоса. |
