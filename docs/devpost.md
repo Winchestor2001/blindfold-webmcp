@@ -151,8 +151,19 @@ the tool accepts and which of those the caller probably meant.
 wording, so everything the tool wanted to say is gone. Every error a model is
 supposed to act on is therefore *returned* as a value, never thrown.
 
-None of the three are in the documentation. We found them by measuring the
-browser, not by reading about it.
+**One dropped request disabled two tools permanently.** Found only by running
+the whole workflow against the deployed origin rather than against localhost:
+`verify_no_residual_text` came back with a fetch error, `export_redacted_document`
+consequently never registered, and no amount of retrying helped. The asset was
+served correctly and was byte-identical to the local build — but a dynamic
+import that fails once is remembered by the module map for the lifetime of the
+document, so every later import rejects with the first error without going near
+the network. The tool now re-imports by URL with a query string appended, which
+is a different key in that map, and says plainly that a reload recovers the
+session if even that fails.
+
+None of these are in the documentation. We found them by measuring the browser,
+not by reading about it.
 
 ## Accomplishments that we're proud of
 
