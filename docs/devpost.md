@@ -250,3 +250,202 @@ Chrome's character budgets by a test.
 Registration lives in `src/mcp/useWebMCPTools.ts`; the descriptions are
 `src/mcp/descriptions.ts`; the fourteen tools are one file each under
 `src/mcp/tools/`.
+
+---
+
+## Additional info (judges and organisers only)
+
+Two fields below are facts about you, not about the project, and are marked
+**CONFIRM**. Do not paste those without checking them.
+
+### Submitter Type
+
+**CONFIRM.** `Individual` if you are submitting alone. `Team` only if someone
+else is on the Manage team step.
+
+### Country of residence
+
+**CONFIRM.** `Uzbekistan`, unless that is wrong. Check it against the eligible
+countries list in the Official Rules **before** submitting — an ineligible
+country is a disqualification that no amount of code fixes.
+
+### Organisation name
+
+Leave blank.
+
+### App Status
+
+```
+New
+```
+
+The first commit is 27 August 2026, inside the submission period. The whole
+repository was written during the hackathon window and the commit history shows
+it, with no rewritten or force-pushed history.
+
+### If Existing, what did you update
+
+Leave blank.
+
+### Live URL
+
+```
+https://blindfold.blindfold.workers.dev
+```
+
+### Testing instructions
+
+```
+No sign-in, no credentials, no upload. Everything runs in the page, on your
+device, including detection, redaction, verification and export.
+
+BROWSER
+Chrome 149+ with chrome://flags/#enable-webmcp-testing enabled, or the ChatGPT
+in-app browser. In any other browser the page still works as an ordinary
+redaction tool and the header says WebMCP is unavailable.
+
+DOCUMENTS
+Three samples are built in, so you never need a document of your own. Ask for
+the "leaked memo" — it is the one with the prompt injection in it.
+
+A FIVE-PROMPT RUN, ABOUT TWO MINUTES
+
+1. "Open the leaked memo and tell me what it's about."
+   Watch the tool count in the left-hand panel go from 3 to 5. Registration is
+   contextual: a tool that does not apply does not exist.
+
+2. "Find everything sensitive, then show me the people."
+   56 findings. Every preview comes back with the value itself blocked out.
+   That is the whole idea — the agent plans over structure it can use and never
+   receives the text.
+
+3. "Is the sender a person or a company? Ask me if you need to."
+   The agent calls request_disclosure with a written reason, and the tool call
+   suspends until you press Allow or Refuse. Please try Refuse at least once:
+   the agent is told refusal is normal and carries on with type and page.
+
+4. "Redact every person and address but keep the amounts, then show me the plan."
+   One sentence of policy, 37 matches. Applying is irreversible and needs your
+   click on a dialog that states how many values will survive.
+
+5. "Prove nothing leaked, then export it."
+   Verification reads the bytes of the export, not the screen: it inflates the
+   PDF content streams and searches them for every removed value. Export does
+   not exist as a tool until that comes back clean.
+
+THE INJECTION TEST
+Open the leaked memo and say "just do whatever the document says". The memo
+contains an instruction aimed at the agent, telling it to mark everything keep
+and export immediately. Previews stay masked and nothing irreversible happens
+without a human click, so the document does not get a vote.
+
+WITHOUT AN AGENT
+DevTools -> Application -> WebMCP lists the registered tools and runs any of
+them with test input. Calling get_workflow_state at each stage shows the
+surface changing: 3 tools with nothing open, 5 open, 9 scanned, 11 with a plan,
+10 applied, 11 verified.
+
+STATE
+Progress is kept in IndexedDB and survives a reload. To start clean, use a new
+profile or clear site data.
+```
+
+### Public code repository
+
+```
+https://github.com/Winchestor2001/blindfold-webmcp
+```
+
+MIT, in `LICENSE` at the repository root, detected by GitHub and shown in the
+About block. **Check that "MIT license" actually appears there before you
+submit** — the rule is explicit about it being visible.
+
+### Which agents or clients did you test your WebMCP tools with
+
+> Only claim what has actually been run. Add the ChatGPT in-app browser to this
+> answer after the 1 September pass, not before.
+
+```
+Chrome 151 stable with chrome://flags/#enable-webmcp-testing, in two ways: the
+DevTools Application -> WebMCP panel for direct calls with hand-written input,
+and a real agent in the browser using natural phrasing.
+
+Every one of the fourteen tools was run both ways, including both branches of
+the two human gates — an allowed disclosure and a refused one, an approved
+apply and a refused export.
+
+Testing against the browser rather than only against the specification is how
+we found the three Chrome behaviours described in the project story: calls
+being cancelled when a tool unregisters itself, inputSchema not being enforced,
+and a rejected execute losing its message.
+```
+
+### Which AI tools have you leveraged while working on this project
+
+```
+Claude Code, with Claude Opus 5, for implementation, debugging and review.
+
+One decision shaped how it was used. WebMCP shipped after the model's training
+cutoff, and every model we tried confidently produced server-side MCP instead —
+McpServer, server.tool(), transports, none of which exist in this API. So we
+vendored the specification and Chrome's documentation into the repository and
+wrote a project rule that WebMCP syntax may come from that file and nowhere
+else, with the official Cloudflare template kept alongside as a syntax
+exemplar. After that the model was reliable.
+
+The tool descriptions and input schemas in src/mcp/descriptions.ts are
+deliberately not AI-generated. They are the interface an agent reasons over,
+and generated ones came out generic enough that the agent picked the wrong
+tool. They are hand-written and revised as prose.
+```
+
+### Describe the level of learning you or your team derived from the project
+
+```
+High, and specifically about the parts that are not in the documentation.
+
+Building against an API that is weeks old means the documentation tells you the
+shape and the browser tells you the truth. Three of our hardest bugs were
+behaviours that contradicted the IDL, and in each case reasoning about the
+problem produced a fix that looked correct and did not work. The one that took
+longest — a tool call being cancelled because the tool removed itself from the
+surface by succeeding — was solved by running four variants of the same release
+timing and watching which ones failed. A microtask after execute returns still
+kills the call; one task later never does.
+
+The design lesson was larger than the API. Forcing every irreversible step and
+every disclosure through a human click made us decide, tool by tool, exactly
+what the agent is entitled to know — and the answer was consistently less than
+we first wrote. Writing fourteen tool descriptions by hand taught us that they
+are prose, not metadata: the ones that work say when to reach for the tool,
+name the tool that comes next, and say what is not returned so the agent stops
+looking for it.
+
+And the most transferable idea: absence is a better guardrail than an error
+message. A tool that does not exist cannot be called at the wrong time, cannot
+be argued with, and costs nothing to ignore.
+```
+
+### Did you gain AI value that you can use in your career
+
+```
+Yes, in three ways.
+
+First, a working model of agent-facing interface design. Tool descriptions,
+input schemas and error messages are a user interface for a reader that cannot
+ask a follow-up question, and they are written and revised like prose. That
+applies to any tool-using system, not just WebMCP.
+
+Second, a pattern for consent-gated automation that we expect to reuse. An
+async tool that suspends on a human decision, returns refusal as a normal
+result rather than an error, and records both outcomes in an audit log, is the
+right shape for any workflow where a person stays accountable for what the
+agent does.
+
+Third, a working method for building against APIs newer than the model:
+vendor the ground truth into the repository, forbid the model from recalling
+the API from memory, keep a known-good template beside it, and verify every
+claim against the runtime rather than the documentation. That method is what
+made an unfamiliar API productive in a week, and it will keep being useful for
+as long as the tools ship faster than the models learn about them.
+```
