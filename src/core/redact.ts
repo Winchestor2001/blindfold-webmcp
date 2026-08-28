@@ -116,6 +116,60 @@ function runsFor(
   return runs;
 }
 
+// ---------------------------------------------------------------------------
+// Loading pdf-lib
+// ---------------------------------------------------------------------------
+//
+// pdf-lib is by far the largest thing this application depends on and nothing
+// needs it until someone verifies or exports, so it is loaded on demand rather
+// than kept in the way of the page appearing.
+//
+// The cost of that is a failure mode worth guarding: a dynamic import that
+// fails is remembered by the module map for the lifetime of the document. Every
+// later import of the same URL rejects with the first error without going near
+// the network, so one dropped request disables verification and export
+// permanently, and the only recovery is a reload the reviewer has no way of
+// knowing about. Measured in Chrome 151 on the deployed origin: after a failed
+// import, re-importing the identical URL fails instantly while the same URL
+// with a query string is a different key in the map and fetches normally.
+//
+// So the retry re-imports by URL, which Chrome's own error message supplies.
+// That produces a second instance of the module; pdf-lib holds no shared state
+// that matters here, so the only cost is memory, and only on a page that has
+// already hit a network failure.
+
+type PdfLib = typeof import("pdf-lib");
+
+let loading: Promise<PdfLib> | null = null;
+
+async function importOnce(): Promise<PdfLib> {
+  try {
+    return await import("pdf-lib");
+  } catch (caught) {
+    const message = caught instanceof Error ? caught.message : String(caught);
+    const url = message.match(/https?:\/\/\S+?\.js/)?.[0];
+    if (!url) throw caught;
+    return (await import(/* @vite-ignore */ `${url}?reload=1`)) as PdfLib;
+  }
+}
+
+export async function loadPdfLib(): Promise<PdfLib> {
+  if (!loading) {
+    loading = importOnce().catch((caught: unknown) => {
+      // A failure is not memoised: the next attempt should reach the network.
+      loading = null;
+      throw new Error(
+        "The PDF code could not be loaded, so the file could not be built. " +
+          "This is a network failure in the browser, not a problem with the " +
+          "document or the plan. Reload the page and try again; the document, " +
+          "the findings and the plan are restored from this device. " +
+          `(${caught instanceof Error ? caught.message : String(caught)})`
+      );
+    });
+  }
+  return loading;
+}
+
 export type BuildInput = {
   doc: LoadedDocument;
   /** Findings whose status is redact. Their text is never written to the file. */
@@ -129,10 +183,7 @@ export type BuildInput = {
  * inspect it, and hand the very same bytes to the user.
  */
 export async function buildRedactedPdf(input: BuildInput): Promise<Uint8Array> {
-  // Loaded on demand. pdf-lib is by far the largest thing this application
-  // depends on and it is not needed until someone exports, so it should not be
-  // in the way of the page appearing.
-  const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+  const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
 
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Courier);

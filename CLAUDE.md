@@ -81,5 +81,5 @@ Before adding or changing a tool, ask: can this leak a value the human has not r
 pnpm install
 pnpm dev        # local, http://localhost:5173
 pnpm build
-pnpm deploy     # Cloudflare Workers
+pnpm run deploy # Cloudflare Workers (bare `pnpm deploy` is pnpm's own command)
 ```
