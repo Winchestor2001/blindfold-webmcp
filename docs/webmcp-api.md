@@ -278,7 +278,10 @@ separate extension for this:
 
 **WebMCP — Model Context Tool Inspector**, by Francois Beaufort (Google Ireland, Ltd.).
 Requires Chrome 150.0.7861.0 or later with `chrome://flags/#enable-webmcp-testing` enabled.
-No API key, no sign-in.
+Manual tool execution needs nothing further. **Agent mode needs a Gemini API key**, set through
+the extension's own "Set Gemini API key" button; until one is set, the Send button stays
+disabled. Keys are free from https://aistudio.google.com/apikey and stay in the extension's
+local storage. Chrome's own doc omits this, which is why it is written down here.
 
 - Install from the Chrome Web Store, or `Load unpacked` from source after `npm install`.
 - Click the extension's action icon in the toolbar. It opens in the **Side Panel**.
