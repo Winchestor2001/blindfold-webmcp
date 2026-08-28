@@ -17,7 +17,7 @@ export function AuditPanel({ state }: { state: State }) {
         <li key={`${entry.at}-${index}`} className="flex gap-2 border-b border-line/40 px-4 py-1.5">
           <span className="font-mono text-[10px] text-muted">{entry.at.slice(11, 19)}</span>
           <ActorBadge actor={entry.actor} />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 break-words">
             <span className="font-mono text-[10.5px] text-slate-300">{entry.action}</span>
             <span className="ml-2 text-[10.5px] text-muted">{entry.detail}</span>
           </div>

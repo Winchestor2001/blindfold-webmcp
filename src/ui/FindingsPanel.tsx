@@ -19,7 +19,7 @@ import type { Finding } from "../core/types";
 function Preview({ state, finding }: { state: State; finding: Finding }) {
   const text = state.doc?.pages.find((page) => page.number === finding.page)?.text ?? "";
   return (
-    <p className="mt-1 font-mono text-[10.5px] leading-snug text-muted">
+    <p className="mt-1 break-words font-mono text-[10.5px] leading-snug text-muted">
       {previewFor(
         text,
         finding,
@@ -87,7 +87,7 @@ export function FindingsPanel({ state }: { state: State }) {
               </span>
             </div>
 
-            <p className="mt-1 font-mono text-[11.5px] text-slate-300">{finding.value}</p>
+            <p className="mt-1 break-words font-mono text-[11.5px] text-slate-300">{finding.value}</p>
             <Preview state={state} finding={finding} />
 
             <div className="mt-1.5 flex gap-1.5">
