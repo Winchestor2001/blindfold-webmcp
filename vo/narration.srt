@@ -1,0 +1,164 @@
+1
+00:00:00,400 --> 00:00:03,460
+Fourteen WebMCP tools live on this page.
+
+2
+00:00:03,600 --> 00:00:06,563
+With nothing open, three of them exist.
+
+3
+00:00:06,700 --> 00:00:09,760
+Open a document and two more appear.
+
+4
+00:00:10,500 --> 00:00:15,015
+It asks what it is looking at, and gets a shape.
+
+5
+00:00:15,100 --> 00:00:18,160
+Types, pages, counts — never the text.
+
+6
+00:00:18,400 --> 00:00:21,290
+The detector runs here, on this device.
+
+7
+00:00:21,500 --> 00:00:23,110
+Nothing is uploaded.
+
+8
+00:00:23,200 --> 00:00:26,163
+Fifty-six confidential values, found in seconds.
+
+9
+00:00:26,400 --> 00:00:29,450
+This is everything the agent receives back.
+
+10
+00:00:29,500 --> 00:00:33,336
+Type, page, confidence — and the value blocked out.
+
+11
+00:00:33,800 --> 00:00:38,250
+It is redacting a document it is not allowed to
+read.
+
+12
+00:00:38,300 --> 00:00:41,810
+When it needs a real value, it has to ask.
+
+13
+00:00:42,400 --> 00:00:45,363
+It is waiting for me right now.
+
+14
+00:00:45,800 --> 00:00:49,830
+I read the reason, and release the sender's name.
+
+15
+00:00:50,000 --> 00:00:54,418
+Consent needs a screen, and a human in front of it.
+
+16
+00:00:54,500 --> 00:00:56,493
+This one I refuse.
+
+17
+00:00:56,600 --> 00:01:00,242
+Refusal comes back as an answer, not an error.
+
+18
+00:01:00,400 --> 00:01:04,430
+That is why this is WebMCP, and not a server.
+
+19
+00:01:04,600 --> 00:01:07,150
+One sentence of policy.
+
+20
+00:01:07,200 --> 00:01:10,066
+Thirty-one values matched across two pages.
+
+21
+00:01:10,500 --> 00:01:15,500
+I see the plan drawn on the document before anything
+is touched.
+
+22
+00:01:15,700 --> 00:01:19,120
+The highlighted spans are what will disappear.
+
+23
+00:01:19,500 --> 00:01:21,784
+The amounts stay.
+
+24
+00:01:22,400 --> 00:01:23,850
+Apply is irreversible.
+
+25
+00:01:23,900 --> 00:01:28,415
+It tells me how many values go, and how many stay.
+
+26
+00:01:28,500 --> 00:01:30,493
+The approval is mine.
+
+27
+00:01:30,800 --> 00:01:33,472
+And nothing is drawn over anything.
+
+28
+00:01:33,600 --> 00:01:39,764
+The characters are removed from the file, and the
+rectangle is drawn where they were.
+
+29
+00:01:40,400 --> 00:01:46,855
+Then it proves it, against the bytes of the export
+rather than what the screen draws.
+
+30
+00:01:47,000 --> 00:01:49,330
+Thirty-one values checked.
+
+31
+00:01:49,600 --> 00:01:52,369
+Nothing under the rectangle to find.
+
+32
+00:01:52,500 --> 00:01:55,560
+Export needs a click as well.
+
+33
+00:01:56,000 --> 00:01:58,380
+I decline this one.
+
+34
+00:01:58,600 --> 00:02:02,242
+Every grant and every refusal is in the log.
+
+35
+00:02:03,300 --> 00:02:05,170
+Including this one.
+
+36
+00:02:06,500 --> 00:02:08,480
+One last thing.
+
+37
+00:02:08,600 --> 00:02:14,920
+This memo carries an instruction aimed at whatever
+is processing it — keep everything, export now.
+
+38
+00:02:15,200 --> 00:02:18,066
+The agent was never handed it.
+
+39
+00:02:18,200 --> 00:02:21,066
+And nothing here moves without a click.
+
+40
+00:02:21,200 --> 00:02:24,000
+The document does not get a vote.

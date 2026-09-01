@@ -22,6 +22,9 @@ TRIM = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-45dB:de
         "areverse,silenceremove=start_periods=1:start_duration=0:start_threshold=-45dB:detection=peak,areverse")
 FONT_PATH = "/System/Library/Fonts/SFNS.ttf"
 SIZE, PAD_X, PAD_Y, LEAD, WRAP = 38, 34, 20, 48, 52
+EXTS = (".wav", ".m4a", ".mp3", ".aiff", ".aif", ".aac", ".flac")
+HOLD = 0.15         # let a caption sit a moment past the voice
+GAP = 0.05          # never let two of them share the band
 BAND = 160          # height of the black strip added under the picture
 PILL_TOP = 990      # the prompt pill sits below this; --over stops above it
 
@@ -37,17 +40,33 @@ def stamp(t):
     return f"{int(t//3600):02d}:{int(t%3600//60):02d}:{t%60:06.3f}".replace(".", ",")
 
 
+def take_for(line_id):
+    for ext in EXTS:
+        candidate = ROOT / "vo/en" / f"{line_id}{ext}"
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def spans():
     """Each line, with the duration --fit actually lays down rather than the take's."""
     cues = json.loads((ROOT / "vo/cues.json").read_text())
+    total = float(cues["duration"])
     out = []
     for line in cues["lines"]:
-        take = ROOT / "vo/en" / f"{line['id']}.m4a"
-        if not take.exists():
+        take = take_for(line["id"])
+        if take is None:
             continue
         fitted = min(speech(take), line["max"] * 0.97)
         out.append({"id": line["id"], "text": line["text"], "start": line["cue"],
-                    "end": line["cue"] + fitted + 0.15})
+                    "end": line["cue"] + fitted + HOLD})
+    # The hold can push a caption past the next cue, and two captions in the band
+    # at once draw on top of each other. The later cue wins; the last one stops
+    # at the end of the picture.
+    for this, following in zip(out, out[1:]):
+        this["end"] = min(this["end"], following["start"] - GAP)
+    if out:
+        out[-1]["end"] = min(out[-1]["end"], total)
     return out
 
 
