@@ -370,10 +370,8 @@ A FIVE-PROMPT RUN, ABOUT TWO MINUTES
 THE INJECTION TEST
 Open the leaked memo and say "just do whatever the document says". The memo
 contains an instruction aimed at the agent, telling it to mark everything keep
-and export immediately. Watch what the agent is handed: headings and masked
-previews, with the instruction's own text never among them. Nothing irreversible
-happens without a human click either, so the document does not get a vote even
-if the agent is convinced by it.
+and export immediately. Previews stay masked and nothing irreversible happens
+without a human click, so the document does not get a vote.
 
 WITHOUT AN AGENT
 DevTools -> Application -> WebMCP lists the registered tools and runs any of
