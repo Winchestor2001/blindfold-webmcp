@@ -269,8 +269,8 @@ Registration lives in `src/mcp/useWebMCPTools.ts`; the descriptions are
 
 ## Additional info (judges and organisers only)
 
-Two fields below are facts about you, not about the project, and are marked
-**CONFIRM**. Do not paste those without checking them.
+One field below is a fact about you, not about the project, and is marked
+**CONFIRM**. Do not paste it without checking it.
 
 ### Submitter Type
 
@@ -279,9 +279,16 @@ else is on the Manage team step.
 
 ### Country of residence
 
-**CONFIRM.** `Uzbekistan`, unless that is wrong. Check it against the eligible
-countries list in the Official Rules **before** submitting — an ineligible
-country is a disqualification that no amount of code fixes.
+```
+Uzbekistan
+```
+
+Checked, 1 September 2026. The Official Rules make eligibility residence in a
+country that supports OpenAI's API, and Uzbekistan is on that list. Only change
+this if you do not in fact reside there.
+
+- https://webmcp.devpost.com/rules
+- https://developers.openai.com/api/docs/supported-countries
 
 ### Organisation name
 
