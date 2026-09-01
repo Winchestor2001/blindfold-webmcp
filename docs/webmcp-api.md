@@ -257,7 +257,9 @@ Description must be non-empty.
 | ChatGPT desktop in-app browser | Works natively, no token. **Requires GPT-5.6 Sol or Terra.** Not Luna. Not Enterprise/Edu workspaces. |
 
 Note: subdomain-matching origin trial tokens are **not issued** for origins on the Public
-Suffix List, which includes `workers.dev`. An exact-origin token may still be issuable.
+Suffix List, which includes `workers.dev`. An exact-origin token is issued and works —
+registered 1 September 2026 for `https://blindfold.blindfold.workers.dev`, expires
+2026-11-17, served from the meta tag in `index.html`. Leave *Match subdomains* unticked.
 
 ## 13. Debugging
 

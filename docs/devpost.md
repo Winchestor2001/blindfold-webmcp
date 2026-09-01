@@ -331,8 +331,10 @@ No sign-in, no credentials, no upload. Everything runs in the page, on your
 device, including detection, redaction, verification and export.
 
 BROWSER
-Chrome 149+ with chrome://flags/#enable-webmcp-testing enabled, or the ChatGPT
-in-app browser. In any other browser the page still works as an ordinary
+Chrome 149+, or the ChatGPT in-app browser. Nothing to switch on: the site
+carries a WebMCP origin trial token, so the tools register on load. If you
+would rather not rely on the token, chrome://flags/#enable-webmcp-testing does
+the same thing. In any other browser the page still works as an ordinary
 redaction tool and the header says WebMCP is unavailable.
 
 DOCUMENTS

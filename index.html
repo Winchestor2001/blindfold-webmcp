@@ -8,7 +8,12 @@
       name="description"
       content="An AI that redacts a document it is not allowed to read. The file never leaves your browser."
     />
-    <!-- ORIGIN_TRIAL_TOKEN -->
+    <!-- WebMCP origin trial, exact origin, expires 2026-11-17. Without this,
+         Chrome 149-156 only exposes document.modelContext behind a flag. -->
+    <meta
+      http-equiv="origin-trial"
+      content="AvcKODcGprzmHE7OJ8CFOrdRS1sHUzuCdw3+OZ6DmThTUUpi2RF7urbFuSipOEx38LWdeMqI2NOph0EgE9QVfgkAAABfeyJvcmlnaW4iOiJodHRwczovL2JsaW5kZm9sZC5ibGluZGZvbGQud29ya2Vycy5kZXY6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0="
+    />
   </head>
   <body>
     <div id="root"></div>
