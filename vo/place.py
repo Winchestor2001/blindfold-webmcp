@@ -77,6 +77,16 @@ def speech_duration(path: Path) -> float:
     return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
 
 
+def tempo_chain(factor: float) -> str:
+    """atempo is only well behaved up to 2x, so compound it beyond that."""
+    parts, rest = [], factor
+    while rest > 2.0:
+        parts.append("atempo=2.0")
+        rest /= 2.0
+    parts.append(f"atempo={rest:.4f}")
+    return ",".join(parts)
+
+
 def take_for(line_id: str) -> "Path | None":
     for ext in EXTS:
         candidate = AUDIO_DIR / f"{line_id}{ext}"
@@ -90,6 +100,8 @@ def main() -> None:
     parser.add_argument("--mux", action="store_true", help="build the narrated video")
     parser.add_argument("--video", help="the silent cut (defaults to the one named in cues.json)")
     parser.add_argument("--out", help="output file (defaults to <video>-narrated.mp4)")
+    parser.add_argument("--fit", action="store_true",
+                        help="speed up any take that runs past its max so it fits its window")
     args = parser.parse_args()
 
     cues = json.loads(CUES.read_text())
@@ -116,14 +128,16 @@ def main() -> None:
             f"  {line['id']}  {seconds:5.2f}s  cue {line['cue']:6.1f}  "
             f"max {line['max']:.1f}  {mark} {slack:+5.2f}   {line['text'][:52]}"
         )
-        takes.append((line, path))
+        takes.append((line, path, seconds))
 
     print()
     if missing:
         print(f"{len(missing)} of {len(lines)} still to record: "
               + ", ".join(line["id"] for line in missing))
     if over:
-        print(f"\n{len(over)} read long and will collide with what follows. Re-read these:")
+        verb = "would collide with what follows, and --fit will speed them up" if args.fit \
+            else "will collide with what follows. Re-read these"
+        print(f"\n{len(over)} read long and {verb}:")
         for line, seconds in over:
             print(f"  {line['id']}  {seconds:.2f}s, needs to be under {line['max']:.1f}s"
                   f"  —  \"{line['text']}\"")
@@ -149,17 +163,25 @@ def main() -> None:
     # 0.003 s, and every clip was back on its beat the moment the bed was there.
     cmd = ["ffmpeg", "-y", "-i", str(video),
            "-f", "lavfi", "-t", str(total), "-i", "anullsrc=r=48000:cl=mono"]
-    for _, path in takes:
+    for _, path, _ in takes:
         cmd += ["-i", str(path)]
 
     filters = []
     labels = ["[1:a]"]
-    for index, (line, _) in enumerate(takes, start=2):
+    fitted = []
+    for index, (line, _, seconds) in enumerate(takes, start=2):
         delay = int(round(line["cue"] * 1000))
         label = f"a{index}"
+        # 0.97 keeps a little of the window rather than landing exactly on it.
+        factor = seconds / (line["max"] * 0.97) if args.fit else 1.0
+        tempo = ""
+        if factor > 1.0:
+            tempo = tempo_chain(factor) + ","
+            fitted.append((line["id"], factor))
         filters.append(
             f"[{index}:a]aresample=48000,pan=mono|c0=c0,"
             f"{TRIM},"
+            f"{tempo}"
             f"loudnorm=I=-16:TP=-1.5:LRA=11,"
             f"adelay={delay}:all=1[{label}]"
         )
@@ -177,6 +199,12 @@ def main() -> None:
         "-movflags", "+faststart",
         str(out),
     ]
+
+    if fitted:
+        print(f"\n{len(fitted)} takes sped up to fit their window:")
+        for line_id, factor in sorted(fitted, key=lambda f: -f[1]):
+            note = "  <- re-read this one" if factor > 1.45 else ""
+            print(f"  {line_id}  {factor:.2f}x{note}")
 
     print(f"\nmuxing {len(takes)} lines onto {video.name} …")
     result = subprocess.run(cmd, capture_output=True, text=True)
