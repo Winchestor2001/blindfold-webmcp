@@ -261,6 +261,13 @@ Suffix List, which includes `workers.dev`. An exact-origin token is issued and w
 registered 1 September 2026 for `https://blindfold.blindfold.workers.dev`, expires
 2026-11-17, served from the meta tag in `index.html`. Leave *Match subdomains* unticked.
 
+The flag has three states and only two of them are what they look like. `Default` leaves the
+decision to the origin trial, which is what a judge with an untouched browser gets. `Disabled`
+is not neutral — it passes `--disable-features` and **overrides the token**, so the page reports
+WebMCP unavailable even with a valid trial. Verified 1 September 2026 on Chrome 152: `Disabled`
+reported unavailable, `Default` registered the tools. To test the token, set the flag to
+`Default`, never to `Disabled`.
+
 ## 13. Debugging
 
 **DevTools → Application → WebMCP.** Two sections:
