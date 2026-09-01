@@ -1,7 +1,7 @@
 # Devpost submission — Blindfold
 
 Paste-ready text. Everything here is English, as the rules require.
-Fill the video link on 3 September; everything else is stable now.
+Every field is filled. Nothing here is waiting on anything.
 
 ---
 
@@ -23,6 +23,16 @@ An agent redacts a document it is not allowed to read. WebMCP tools return only 
 https://blindfold.blindfold.workers.dev
 https://github.com/Winchestor2001/blindfold-webmcp
 ```
+
+## Video demo link
+
+```
+https://youtu.be/hFe44_Z5OKo
+```
+
+Public on YouTube, as the rules require — not unlisted. 2:24, under the
+three-minute limit. Narration is the entrant's own voice and there is no music,
+so nothing in it is third-party material.
 
 ## Built with
 
